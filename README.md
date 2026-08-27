@@ -1,287 +1,127 @@
 # phases-agents
 
-![phases-agents : select, block, prove](docs/banner.png)
+*English · [Français](README.fr.md)*
 
-MCP local de découverte et sélection déterministe de skills validés.
+![phases-agents: select, block, prove](docs/banner.png)
 
-Runtime Python standard library uniquement.
+A local MCP server that discovers, validates and selects skills
+deterministically. Python standard library only, no runtime dependencies.
 
-Un serveur. Cinq outils. Zéro exécution cachée.
+One server. Five tools. Nothing executed behind your back.
 
-## Principe
+## Why
 
-![Mêmes entrées, même plan](docs/determinism.png)
+AI agents improvise. Ask the same question twice and you get two different
+plans. That is fine for brainstorming, and unacceptable for audit and
+compliance work.
 
-Même cible, même catalogue, mêmes paramètres : même plan. La sélection est
-calculée, jamais improvisée.
+phases-agents removes the improvisation. It profiles a local project,
+validates a catalogue of skills against a strict contract, and returns a plan
+that can be replayed. Same target, same catalogue, same parameters, same
+decision.
+
+## Principle
+
+![Same inputs, same plan](docs/determinism.png)
 
 ```text
-identifiants de racines configurées
-→ découverte bornée
-→ validation officielle
-→ registre immuable
-→ cache vérifié
-→ profil detector
-→ sélection déterministe
-→ plan MCP
+configured root identifiers
+→ bounded discovery
+→ official validation
+→ immutable registry
+→ verified cache
+→ detector profile
+→ deterministic selection
+→ MCP plan
 ```
 
-Le MCP transporte les skills sélectionnés.
-
-Le LLM appelant les interprète ensuite.
-
-Le MCP n’exécute aucun skill.
-
-Le MCP sélectionne et expose.
-
-Le LLM exécute la démarche.
-
-Il utilise alors ses propres outils.
+The server selects and exposes. The calling model reads the selected skills
+and decides what to do with them, using its own tools. **The server never
+executes a skill.**
 
 ## Architecture
 
-| Fichier | Rôle |
+| File | Role |
 |---|---|
-| `validator.py` | contrats officiels et snapshots validés |
-| `skill_loader.py` | découverte locale bornée |
-| `skill_runtime.py` | racines de confiance et cache vérifié |
-| `skill_types.py` | types immuables et limites |
-| `registry.py` | registre validé et immuable |
-| `detector.py` | profil local de la cible |
-| `planner.py` | sélection et ordre déterministes |
-| `server.py` | transport JSON-RPC/MCP |
-| `capabilities.py` | vocabulaire des capacités client |
-| `profile_facts.py` | vocabulaire versionné des faits de profil |
-| `skill_gaps.py` | règles de lacunes (`skills_missing`) |
+| `validator.py` | official contracts and validated snapshots |
+| `skill_loader.py` | bounded local discovery |
+| `skill_runtime.py` | trusted roots and verified cache |
+| `skill_types.py` | immutable types and limits |
+| `registry.py` | validated, immutable registry |
+| `detector.py` | local profile of the target |
+| `planner.py` | deterministic selection and ordering |
+| `server.py` | JSON-RPC/MCP transport |
+| `capabilities.py` | client capability vocabulary |
+| `profile_facts.py` | versioned profile-fact vocabulary |
+| `skill_gaps.py` | gap rules (`skills_missing`) |
 
-Le contrat normatif est ici :
+The normative contract lives in `core/SKILLS_CONTRACT.md` (French).
 
-```text
-core/SKILLS_CONTRACT.md
-```
+## Quick start
 
-## Démarrage rapide
-
-Un package d’exemple est livré dans `examples/skills/`. Trois commandes
-suffisent pour voir un plan réel :
+An example package ships in `examples/skills/`. Three steps produce a real
+plan.
 
 ```bash
 git clone https://github.com/Cherridsaid/phases-agents && cd phases-agents
 ```
 
-Créez `skills-roots.json` en pointant la racine d’exemple :
+Create `skills-roots.json` pointing at the example root:
 
 ```json
 {
   "config_version": "1.0",
   "roots": [
-    { "id": "demo", "path": "/chemin/absolu/vers/phases-agents/examples/skills" }
+    { "id": "demo", "path": "/absolute/path/to/phases-agents/examples/skills" }
   ]
 }
 ```
 
 ```bash
-python server.py --skills-config /chemin/absolu/skills-roots.json
+python server.py --skills-config /absolute/path/to/skills-roots.json
 ```
 
-Le serveur lit du JSON-RPC ligne par ligne sur son entrée standard. Un
-`phases_agents_plan` sur un projet Python sélectionne alors `hello-python` :
+The server reads JSON-RPC line by line on standard input. A
+`phases_agents_plan` call against a Python project then selects
+`hello-python`:
 
 ```json
 {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"phases_agents_plan",
- "arguments":{"root_ids":["demo"],"target":"/chemin/absolu/vers/un/projet",
+ "arguments":{"root_ids":["demo"],"target":"/absolute/path/to/a/project",
  "today":"2026-08-27","plan_version":"B3",
  "client_capabilities":["filesystem_read","filesystem_search"]}}}
 ```
 
-Deux formats de plan coexistent. `"B3"` est le nom du format versionné, pas
-un numéro de version du serveur : son schéma officiel est
-`core/PLAN_B3_SCHEMA.json`. C’est le format à utiliser pour tout nouveau
-travail ; le format historique reste servi pour ne pas casser les appelants
-existants, et sera déprécié avant d’être retiré.
+Two plan formats coexist. `"B3"` names the versioned **format**, not a server
+version; its official schema is `core/PLAN_B3_SCHEMA.json`. Use it for new
+work. Without `plan_version`, the legacy format returns a flat list of steps;
+it is kept so existing callers do not break, and will be deprecated before
+removal. `client_capabilities` is only accepted in B3, since declaring what
+the client can do only makes sense in that format.
 
-Sans `plan_version`, le plan historique rend une liste d’étapes. Avec `"plan_version": "B3"`, le plan versionné rend
-`skills_selected`, `skills_not_applicable`, `skills_blocked` et
-`skills_missing`. `client_capabilities` n’est accepté qu’en B3 : déclarer ce
-que le client sait faire n’a de sens que dans ce format.
+### Connecting an MCP client
 
-## Package de skill
+Claude Code (`.mcp.json` at the root of your project):
 
-Chaque package est un enfant direct d’une racine.
-
-Il contient au minimum :
-
-```text
-<racine>/<skill-id>/SKILL.md
-<racine>/<skill-id>/phases.json
+```json
+{
+  "mcpServers": {
+    "phases-agents": {
+      "command": "python",
+      "args": [
+        "/absolute/path/to/phases-agents/server.py",
+        "--skills-config",
+        "/absolute/path/to/skills-roots.json"
+      ]
+    }
+  }
+}
 ```
 
-Le plus simple pour démarrer le vôtre est de copier
-`examples/skills/hello-python/`, puis de renommer l’identifiant.
+Codex uses the same command/arguments pair in its own configuration file. No
+token and no environment variable is required.
 
-### Frontmatter de SKILL.md
-
-Cinq clés sont autorisées, toutes optionnelles, mais contrôlées si présentes :
-
-| Clé | Contrainte |
-|---|---|
-| `name` | doit égaler `phases.json.id` |
-| `description` | texte libre borné |
-| `version` | doit égaler `phases.json.version` |
-| `owner` | identité libre de l’auteur, sans caractère invisible |
-| `license` | `Apache-2.0`, `MIT`, `BSD-2-Clause` ou `BSD-3-Clause` |
-
-### Les quatorze sections obligatoires
-
-Chacune est un titre Markdown (`##`), dans n’importe quel ordre :
-
-`Loi centrale` · `Ce que ce skill fait` · `Ce que ce skill ne fait pas` ·
-`Conditions d'activation` · `Conditions d'exclusion` ·
-`Capacites necessaires` · `Interdictions` · `Methode d'audit` ·
-`Contrat de preuve` · `Format de sortie` · `Conditions de blocage` ·
-`Limites connues` · `Exemples d'entree` · `Exemple de sortie attendue`
-
-### Champs de phases.json
-
-Tous obligatoires : `schema_version`, `id`, `version`, `title`,
-`description`, `domain`, `project_types`, `platforms`, `activation`,
-`exclusions`, `requires_capabilities`, `optional_capabilities`,
-`forbidden_capabilities`, `execution_mode`, `human_approval`,
-`output_schema`, `rules_path`, `references_path`, `scripts_path`,
-`tests_path`, `files`.
-
-`output_schema` utilise la forme symbolique `core:NOM_SCHEMA.json`.
-
-### Vocabulaires fermés
-
-`project_types` doit croiser ce que le detector sait produire :
-`apk`, `python`, `skill_package`, `solana`, `web`.
-
-`activation.any` utilise les faits du profil : `collects_personal_data`,
-`has_api`, `has_apk`, `has_authentication`, `has_database`, `has_ecommerce`,
-`has_eu_context`, `has_file_upload`, `has_javascript`, `has_python`,
-`has_rust`, `has_skill_packages`, `has_solana`, `has_source_code`,
-`has_typescript`, `has_web`, `uses_ai`, `uses_payments`.
-
-`requires_capabilities`, `optional_capabilities` et
-`forbidden_capabilities` utilisent : `browser`,
-`dependency_installation`, `filesystem_read`, `filesystem_search`,
-`filesystem_write`, `human_question`, `shell`, `target_code_execution`,
-`web`.
-
-Un `domain` valant `legal`, `juridique`, `regulatory` ou `compliance`
-déclenche un régime supplémentaire : chaque règle citée doit porter une
-source officielle, une juridiction et une date de vérification.
-
-Le validator contrôle aussi :
-
-- frontmatter plat ;
-- quatorze sections obligatoires ;
-- routes déclarées ;
-- fichiers déclarés ;
-- schémas officiels ;
-- registre local officiel ;
-- chemins confinés ;
-- date injectée.
-
-La présence de `SKILL.md` seule échoue.
-
-Un package invalide bloque le registre.
-
-`SKILL_MANIFEST_SCHEMA.json` reste officiel.
-
-Il décrit la **forme** de chaque `phases.json` : champs obligatoires, types et
-vocabulaires fermés.
-
-Le moteur de schéma est volontairement minimal. Il applique `enum`,
-`minLength` et `minItems`, et rien d’autre : ni `pattern`, ni `if`/`then`, ni
-`oneOf`. Un schéma qui utiliserait ces mots-clés serait lui-même rejeté.
-
-Conséquence à connaître : les règles **conditionnelles** ne vivent pas dans le
-schéma mais dans `validator.py`, qui reste la source de vérité. La règle de
-version en est l’exemple :
-
-- `requires_capabilities` fait partie des vingt et un champs obligatoires ;
-- `provides_capabilities` est **interdit** en manifeste `1.0` et **exigé** en
-  manifeste `1.1`.
-
-Cette règle est appliquée et testée, mais elle n’est pas exprimable dans le
-schéma. Ne lisez donc pas `required` comme la totalité du contrat.
-
-Enfin, les capacités **fournies** forment un vocabulaire **ouvert** : chaque
-catalogue nomme ce qu’il apporte, et seule la forme est imposée
-(`^[a-z][a-z0-9_]{0,63}$`). Seules les capacités **client** sont fermées : ce
-sont celles du protocole, pas celles de votre domaine.
-
-## Identité
-
-`phases.json.id` fournit l’identité.
-
-`SKILL.md.name` doit correspondre.
-
-Le dossier doit avoir la même clé.
-
-La clé utilise NFKC puis `casefold`.
-
-Les collisions bloquent toute construction.
-
-## Sélection
-
-![Chaque skill est classé et justifié](docs/classification.png)
-
-Chaque skill valide du registre tombe dans exactement une catégorie, avec sa
-raison. Rien n'est écarté en silence.
-
-Le signal automatique prouvé reste :
-
-```text
-project_types ∩ profile.types
-```
-
-Plateforme, domaine et capacités filtrent seulement
-si l’appelant fournit ces contraintes.
-
-Une capacité interdite rejette le skill.
-
-Aucun score sémantique n’est inventé.
-
-Le plan est trié par identifiant.
-
-Un plan vide reste explicitement valide.
-
-Il contient `NO_COMPATIBLE_SKILL`.
-
-Le plan `B3` classe chaque skill installé.
-
-```text
-skills_selected
-skills_not_applicable
-skills_blocked
-```
-
-Chaque skill apparaît exactement une fois.
-
-`skills_missing` contient des capacités absentes.
-
-Les lacunes utilisent des faits confirmés.
-
-Une lacune ne prouve aucune non-conformité.
-
-Le plan public complet reste limité à 1 Mio.
-
-## Tools MCP
-
-Surface publique :
-
-```text
-phases_agents_detect
-phases_agents_list_skills
-phases_agents_get_skill
-phases_agents_plan
-phases_agents_refresh_skills
-```
-
-Arguments principaux :
+## MCP tools
 
 ```text
 detect(target)
@@ -292,167 +132,213 @@ plan(root_ids, target, today, plan_version, client_capabilities?)
 refresh_skills(root_ids, today)
 ```
 
-## Démarrage
+`today` is injected rather than read from a clock, so every call is
+replayable. `get_skill` takes an identifier, never a path, and its content
+comes from the validated snapshot. Absolute paths and detected secrets are
+masked in public output. Any encoded JSON-RPC response stays under 1 MiB.
 
-Les racines sont configurées au démarrage.
+The first call builds the validated registry. Warm calls verify metadata
+without re-reading contents. `refresh_skills` forces a rebuild.
 
-Copier `skills-roots.template.json`, puis :
+## Writing a skill package
 
-```json
-{
-  "config_version": "1.0",
-  "roots": [
-    {
-      "id": "product",
-      "path": "<chemin-absolu-vers-vos-skills>"
-    }
-  ]
-}
-```
+Each package is a direct child of a root and contains at least:
 
 ```text
-python server.py --skills-config <chemin-absolu>/skills-roots.json
+<root>/<skill-id>/SKILL.md
+<root>/<skill-id>/phases.json
 ```
 
-Le client MCP fournit uniquement des `root_ids`.
+The fastest way to start is to copy `examples/skills/hello-python/` and rename
+the identifier.
 
-Aucun chemin de racine de skills n'est accepté par un appel MCP.
+### SKILL.md frontmatter
 
-En revanche, `detect` et `plan` prennent un `target` : c'est le projet à
-profiler. Ce chemin n'est pas confiné aux racines, par conception : le but
-est d'analyser un projet quelconque. Il doit être absolu et local ; les
-formes UNC sont refusées. Le serveur y lit des noms de fichiers et des
-marqueurs, jamais leur contenu complet.
+Five keys are allowed. All optional, all checked when present.
 
-N'exposez donc ce serveur qu'à un client de confiance. Le modèle de menace
-complet, `target` compris, est détaillé dans [SECURITY.md](SECURITY.md).
+| Key | Constraint |
+|---|---|
+| `name` | must equal `phases.json.id` |
+| `description` | bounded free text |
+| `version` | must equal `phases.json.version` |
+| `owner` | free author identity, no invisible characters |
+| `license` | `Apache-2.0`, `MIT`, `BSD-2-Clause` or `BSD-3-Clause` |
 
-### Brancher un client MCP
+### The fourteen required sections
 
-Claude Code (`.mcp.json` à la racine de votre projet) :
+Each is a Markdown heading (`##`), in any order. **Section titles are French**,
+because they belong to the contract; the body is yours to write in any
+language.
 
-```json
-{
-  "mcpServers": {
-    "phases-agents": {
-      "command": "python",
-      "args": [
-        "/chemin/absolu/vers/phases-agents/server.py",
-        "--skills-config",
-        "/chemin/absolu/vers/skills-roots.json"
-      ]
-    }
-  }
-}
+`Loi centrale` · `Ce que ce skill fait` · `Ce que ce skill ne fait pas` ·
+`Conditions d'activation` · `Conditions d'exclusion` ·
+`Capacites necessaires` · `Interdictions` · `Methode d'audit` ·
+`Contrat de preuve` · `Format de sortie` · `Conditions de blocage` ·
+`Limites connues` · `Exemples d'entree` · `Exemple de sortie attendue`
+
+### phases.json fields
+
+All required: `schema_version`, `id`, `version`, `title`, `description`,
+`domain`, `project_types`, `platforms`, `activation`, `exclusions`,
+`requires_capabilities`, `optional_capabilities`, `forbidden_capabilities`,
+`execution_mode`, `human_approval`, `output_schema`, `rules_path`,
+`references_path`, `scripts_path`, `tests_path`, `files`.
+
+`output_schema` uses the symbolic form `core:SCHEMA_NAME.json`.
+
+### Closed vocabularies
+
+`project_types` must intersect what the detector can emit: `apk`, `python`,
+`skill_package`, `solana`, `web`.
+
+`activation.any` uses profile facts: `collects_personal_data`, `has_api`,
+`has_apk`, `has_authentication`, `has_database`, `has_ecommerce`,
+`has_eu_context`, `has_file_upload`, `has_javascript`, `has_python`,
+`has_rust`, `has_skill_packages`, `has_solana`, `has_source_code`,
+`has_typescript`, `has_web`, `uses_ai`, `uses_payments`.
+
+`requires_capabilities`, `optional_capabilities` and
+`forbidden_capabilities` use: `browser`, `dependency_installation`,
+`filesystem_read`, `filesystem_search`, `filesystem_write`, `human_question`,
+`shell`, `target_code_execution`, `web`.
+
+**Provided** capabilities are an **open** vocabulary: each catalogue names what
+it brings, and only the shape is enforced (`^[a-z][a-z0-9_]{0,63}$`). Only
+**client** capabilities are closed, because they describe the protocol rather
+than your domain.
+
+A `domain` of `legal`, `juridique`, `regulatory` or `compliance` triggers an
+extra regime: every rule cited must carry an official source, a jurisdiction
+and a verification date.
+
+### What the schema does and does not say
+
+`SKILL_MANIFEST_SCHEMA.json` describes the **shape** of `phases.json`:
+required fields, types, closed vocabularies.
+
+The schema engine is deliberately minimal. It applies `enum`, `minLength` and
+`minItems`, and nothing else: no `pattern`, no `if`/`then`, no `oneOf`. A
+schema using those keywords would itself be rejected.
+
+The consequence matters: **conditional rules live in `validator.py`**, which
+remains the source of truth. The version rule is the example —
+`provides_capabilities` is *forbidden* in a `1.0` manifest and *required* in a
+`1.1` one. That rule is enforced and tested, but it is not expressible in the
+schema. Do not read `required` as the whole contract.
+
+A package with only `SKILL.md` fails. An invalid package blocks the registry
+rather than degrading silently.
+
+## Identity
+
+`phases.json.id` is the identity, and `SKILL.md.name` must match it. The
+directory must carry the same key. Keys are normalised with NFKC then
+`casefold`, so homoglyphs cannot smuggle in a second identity. Any collision
+blocks the whole build; no package is elected arbitrarily.
+
+## Selection
+
+![Every skill is classified and justified](docs/classification.png)
+
+Every valid skill in the registry lands in exactly one category, with its
+reason. Nothing is discarded silently.
+
+The only proven automatic signal is:
+
+```text
+project_types ∩ profile.types
 ```
 
-Codex utilise la même paire commande/arguments dans son propre fichier de
-configuration. Aucun jeton, aucune variable d’environnement n’est requis.
+Platform, domain and capabilities filter only when the caller supplies those
+constraints. A forbidden capability rejects the skill. No semantic score is
+invented, and the plan is sorted by identifier.
 
-`get_skill` accepte uniquement un identifiant.
+An empty plan is explicitly valid: it carries `NO_COMPATIBLE_SKILL`.
 
-Le contenu vient du snapshot validé.
+The `B3` plan classifies every installed skill across `skills_selected`,
+`skills_not_applicable` and `skills_blocked`; each skill appears exactly once.
+`skills_missing` lists capabilities with no executable provider, derived from
+confirmed facts only. **A gap never proves non-compliance** — it says an audit
+deemed necessary is not covered.
 
-Les chemins absolus restent masqués.
+## Limits
 
-Les chaînes sensibles détectées restent masquées.
+- 16 roots maximum
+- direct depth only
+- 1,000 packages maximum
+- 10,000 entries per root
+- `SKILL.md` capped at 256 KiB
+- a single reference capped at 256 KiB, 1 MiB in total
+- snapshots capped at 16 MiB
+- public result capped at 1 MiB
+- 100 issues per package
+- fingerprint capped at 100,000 nodes
 
-Les schémas d’arguments sont fermés.
+Callers may only lower these limits, never raise them.
 
-Toute réponse JSON-RPC encodée reste sous 1 Mio.
+## Runtime constraints
 
-Le premier appel construit le registre validé.
+- Python `>=3.11`
+- no third-party runtime dependency
+- no implicit network
+- no runtime shell
+- no target code executed
+- no implicit clock
+- no telemetry
+- no skill downloaded
 
-Les appels chauds vérifient les métadonnées.
-
-`refresh_skills` force la reconstruction.
-
-## Limites
-
-- 16 racines maximum ;
-- profondeur directe uniquement ;
-- 1 000 packages maximum ;
-- 10 000 entrées par racine ;
-- `SKILL.md` limité à 256 Kio ;
-- référence limitée à 256 Kio ;
-- références cumulées limitées à 1 Mio ;
-- snapshots cumulés limités à 16 Mio ;
-- résultat public limité à 1 Mio ;
-- 100 issues maximum par package ;
-- empreinte limitée à 100 000 noeuds.
-
-Les appelants peuvent seulement réduire ces limites.
-
-## Contraintes runtime
-
-- Python `>=3.11` ;
-- aucune dépendance runtime tierce ;
-- aucun réseau implicite ;
-- aucun shell runtime ;
-- aucun code cible exécuté ;
-- aucune horloge implicite ;
-- aucune télémétrie ;
-- aucun téléchargement de skill.
-
-`pytest` reste une dépendance de développement.
+`pytest` is a development dependency only.
 
 ## Tests
 
-Commande :
-
-```text
+```bash
 python -m pytest -q
 ```
 
-Résultat attendu :
+Expected result:
 
 ```text
-729 réussis, 2 ignorés
-0 échec
+729 passed, 2 skipped
+0 failed
 ```
 
-Les textes normatifs sont extraits en LF.
+Normative texts are checked out with LF endings, enforced by `.gitattributes`.
+A couple of Windows symlink tests are skipped: they need a local Windows
+privilege. Windows junctions are genuinely tested.
 
-Cette règle vient de `.gitattributes`.
+## Level of proof
 
-Quelques tests symlinks Windows peuvent être ignorés.
-
-Ils dépendent d'un privilège Windows local.
-
-Les junctions Windows sont réellement testées.
-
-## Niveau de preuve
-
-Le validator confirme uniquement :
+The validator confirms one thing only:
 
 ```text
 STRUCTURALLY_VALIDATED
 ```
 
-Il ne vérifie pas la cible réelle.
+It does not verify the real target. `TARGET_VERIFIED` stays forbidden in V1.
 
-`TARGET_VERIFIED` reste interdit en V1.
+## Security
 
-## Sécurité
+The loader refuses reparse points. Reads are bounded and confined. Output is
+sorted and deterministic.
 
-Le loader refuse les reparse points.
+One design decision deserves your attention: `detect` and `plan` take a
+`target` path that is **not** confined to the configured roots, because the
+point is to profile an arbitrary project. Run this server under an account
+whose reach you accept, and connect it only to a trusted client. The full
+threat model is in [SECURITY.md](SECURITY.md).
 
-Les lectures sont bornées et confinées.
+## Non-guarantees
 
-Les sorties restent triées et déterministes.
-
-## Non-garanties
-
-- aucune pertinence sémantique universelle ;
-- aucun skill externe automatiquement approuvé ;
-- aucun audit du contenu des scripts ;
-- aucune preuve cible réellement montée ;
-- aucune atomicité Windows totale ;
-- aucune reconnaissance HTML universelle ;
-- aucune détection universelle des secrets ;
-- aucune conformité juridique garantie ;
-- aucune marketplace ou source distante.
+- no universal semantic relevance
+- no external skill approved automatically
+- no audit of script contents
+- no genuinely mounted target proof
+- no total Windows atomicity
+- no universal HTML recognition
+- no universal secret detection
+- no guaranteed legal compliance
+- no marketplace, no remote source
 
 ## Licence
 
-Apache-2.0. Voir `LICENSE` et `NOTICE`.
+Apache-2.0. See `LICENSE` and `NOTICE`.

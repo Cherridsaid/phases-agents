@@ -1,0 +1,146 @@
+{
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\capabilities.py": {
+    "mtime": 1787844205.7659175,
+    "hash": "4a3fb2e11fc7652d91ae2b5fdfa17214"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\detector.py": {
+    "mtime": 1787816905.0438676,
+    "hash": "30affc72f99e3e60a14567b2b669c98f"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\planner.py": {
+    "mtime": 1787813480.0539553,
+    "hash": "cacea8228442bc8bf15588da9e03bd3d"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\profile_facts.py": {
+    "mtime": 1787813480.06421,
+    "hash": "41a5cb88acebe71728e73fa49db94756"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\registry.py": {
+    "mtime": 1787813480.0539553,
+    "hash": "2e874bae82111a1ee0d6c832c97ff424"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\server.py": {
+    "mtime": 1787818350.7263749,
+    "hash": "64ec30309daa6d91ad9a45f4fde8805d"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\skill_gaps.py": {
+    "mtime": 1787813480.0632,
+    "hash": "9f304cf732bd4a02372eb431658224d2"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\skill_loader.py": {
+    "mtime": 1787813480.0539553,
+    "hash": "68cced9b5e7d7c09ef29640191cfedb6"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\skill_runtime.py": {
+    "mtime": 1787813480.0539553,
+    "hash": "a3a9c58b943ba2e6b6e3407055035d02"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\skill_types.py": {
+    "mtime": 1787813480.061657,
+    "hash": "252a4bfa774af30eee8153778ce1fe0e"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\validator.py": {
+    "mtime": 1787844155.5803342,
+    "hash": "26e253fcb1f9786fd03b78f3c0b45e72"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\b1_helpers.py": {
+    "mtime": 1787813480.1794777,
+    "hash": "5b62927ccfe83d7947769c9d52ffc104"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_b1_quality.py": {
+    "mtime": 1787813480.186089,
+    "hash": "0c2f1f332725b93a721c333c762b3e93"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_b2_line_endings.py": {
+    "mtime": 1787816992.529138,
+    "hash": "64a06c1e6de35e618018b2aedcbdee22"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_detector.py": {
+    "mtime": 1787816905.0438676,
+    "hash": "50264dc2c5f6ccb4c695307276f06d4a"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_examples.py": {
+    "mtime": 1787844329.948139,
+    "hash": "415091b9524b36311db6ecd4b6438e1a"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_invariants.py": {
+    "mtime": 1787841581.7490811,
+    "hash": "c4971756688033fbefd0cb19d1a1d3ad"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_planner.py": {
+    "mtime": 1787813480.2191122,
+    "hash": "d41cb6144788f997a0fe40d3a893e4ea"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_registry.py": {
+    "mtime": 1787813480.2191122,
+    "hash": "ec5f93efc55c09621ef5e606e3d96c35"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_security.py": {
+    "mtime": 1787813480.2191122,
+    "hash": "661ccbba73d4daf64ae89dbc815b5442"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_server.py": {
+    "mtime": 1787816928.2667942,
+    "hash": "82a5c038e82251b81b53af09e20d2c26"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_skill_loader.py": {
+    "mtime": 1787813480.2264,
+    "hash": "4c90d67d0d7f7c4891a98fa6d5f58caa"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_skill_runtime.py": {
+    "mtime": 1787813480.227911,
+    "hash": "0ba087e1cb859ced8670435b16ab95d2"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\test_validator.py": {
+    "mtime": 1787817142.255863,
+    "hash": "d88e843ad63de836582a0032b862dced"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\tests\\__init__.py": {
+    "mtime": 1787813480.1794777,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\README.md": {
+    "mtime": 1787844506.2498784,
+    "hash": "65a7e27a5b124a7b5ebf367de71b2abf"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\SECURITE_ATTRIBUTION_GIT.md": {
+    "mtime": 1787815290.6080756,
+    "hash": "b6bbac004d75ba218e1fd1c644bbf30e"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\SECURITY.md": {
+    "mtime": 1787843444.1488788,
+    "hash": "2bd1f00f83c1c5b1acf2208f6b5bd617"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\core\\SKILLS_CONTRACT.md": {
+    "mtime": 1787818350.7263749,
+    "hash": "853d0a1ae9536aa5fb1fa6a68116784f"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\examples\\skills\\hello-python\\SKILL.md": {
+    "mtime": 1787841185.1018002,
+    "hash": "c086a83413b23ff6506206fc1e453699"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\examples\\skills\\hello-python\\references\\reference.md": {
+    "mtime": 1787841185.102804,
+    "hash": "d9995b0c54927aeb7515963e622477ae"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\examples\\skills\\hello-python\\scripts\\checklist.md": {
+    "mtime": 1787841185.102804,
+    "hash": "c302e4e0e6ebc64845552d5389460574"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\examples\\skills\\hello-python\\tests\\cases.md": {
+    "mtime": 1787841185.102804,
+    "hash": "2c601e7ccf35131e7c138eba8762e4e1"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\docs\\banner.png": {
+    "mtime": 1787842445.2036798,
+    "hash": "3820c2972e5e0f1fca602985cd6b8416"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\docs\\classification.png": {
+    "mtime": 1787842445.235107,
+    "hash": "fe06f4af636b2cf376e047c893ed0f97"
+  },
+  "C:\\Users\\maggi\\Desktop\\MCP phase agent\\docs\\determinism.png": {
+    "mtime": 1787842445.2235546,
+    "hash": "37188c8f7c54ffd784513952d01c496b"
+  }
+}
