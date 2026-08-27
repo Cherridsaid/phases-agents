@@ -3,17 +3,29 @@
   "schema_id": "SKILL_GAP_RULES_SCHEMA",
   "version": "1.0.0",
   "type": "object",
-  "required": ["schema_id", "version", "description", "rules"],
+  "required": [
+    "schema_id",
+    "version",
+    "description",
+    "rules"
+  ],
   "properties": {
     "schema_id": {
       "type": "string",
-      "enum": ["SKILL_GAP_RULES"]
+      "enum": [
+        "SKILL_GAP_RULES"
+      ]
     },
     "version": {
       "type": "string",
-      "enum": ["1.0.0"]
+      "enum": [
+        "1.0.0"
+      ]
     },
-    "description": {"type": "string", "minLength": 1},
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
     "rules": {
       "type": "array",
       "items": {
@@ -28,35 +40,32 @@
         "properties": {
           "gap_id": {
             "type": "string",
-            "enum": [
-              "GAP-EXAMPLE"
-            ]
+            "minLength": 1
           },
           "required_facts": {
             "type": "array",
+            "minItems": 1,
             "items": {
               "type": "string",
-              "enum": [
-                "collects_personal_data",
-                "has_ecommerce",
-                "has_eu_context",
-                "uses_payments"
-              ]
+              "minLength": 1
             }
           },
           "capability": {
             "type": "string",
-            "enum": [
-              "example_domain_audit"
-            ]
+            "minLength": 1
           },
           "severity": {
             "type": "string",
-            "enum": ["warning", "blocking"]
+            "enum": [
+              "warning",
+              "blocking"
+            ]
           },
           "reason_code": {
             "type": "string",
-            "enum": ["NO_INSTALLED_SKILL_FOR_CAPABILITY"]
+            "enum": [
+              "NO_INSTALLED_SKILL_FOR_CAPABILITY"
+            ]
           }
         },
         "additionalProperties": false

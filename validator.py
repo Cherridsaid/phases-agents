@@ -317,6 +317,13 @@ _FRONTMATTER_KEY_RE = re.compile(r"^[a-z][a-z0-9_-]*$")
 # lacune). Meme grammaire que les capacites client, mais vocabulaire OUVERT :
 # le protocole fixe ce que le client sait faire, pas ce qu'un catalogue apporte.
 _CAPABILITY_NAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
+# Identifiant de lacune : majuscules, chiffres et tirets, borne comme le reste.
+_GAP_ID_RE = re.compile(r"^[A-Z][A-Z0-9-]{0,63}$")
+# Identifiant LISIBLE : segments courts separes, au moins trois. Ce qui compte
+# n'est pas l'absence de chiffre mais l'absence de bloc continu long : un
+# secret ne se decoupe pas en mots de 1 a 8 caracteres.
+_READABLE_IDENTIFIER_RE = re.compile(
+    r"[a-z][a-z0-9]{0,11}(?:[_-][a-z0-9]{1,12}){2,}")
 
 _SCHEMA_KEYS = {
     "$schema", "schema_id", "version", "type", "required", "properties",
@@ -2110,6 +2117,10 @@ def _validate_skill_package(skill_dir: str, core_dir: str | None = None,
                     or len(owner) > _MAX_FRONTMATTER_VALUE
                     or owner != owner.strip()
                     or _norm_unicode(owner) != owner
+                    # Redondant avec la ligne precedente pour Cc et Cf, que
+                    # _norm_unicode retire deja : garde en defense en
+                    # profondeur, et seul filet pour les surrogates (Cs).
+                    # Une mutation de cette ligne seule ne rougit donc pas.
                     or any(unicodedata.category(c) in {"Cc", "Cf", "Cs"}
                            for c in owner)):
                 issues.append(Issue("error", "MANIFEST_MISMATCH",
@@ -3032,6 +3043,12 @@ def validate_skill_gap_rules(
                     "error", "GAP_RULE_DUPLICATE",
                     "gap_id duplique", path))
             seen_gaps.add(gap_id)
+            # Le schema ne porte plus d'enum fige : un catalogue tiers nomme
+            # ses propres lacunes. La forme reste imposee ici.
+            if _GAP_ID_RE.fullmatch(gap_id) is None:
+                issues.append(Issue(
+                    "error", "GAP_RULE_ID_INVALID",
+                    f"gap_id invalide: {gap_id!r}", path))
         if isinstance(capability, str):
             if capability in seen_capabilities:
                 issues.append(Issue(
@@ -3681,6 +3698,13 @@ def _secret_violation(excerpt) -> str | None:
                 # Identifiant redactionnel snake_case/kebab-case entier.
                 # Aucun chiffre, aucun segment court, au moins trois mots :
                 # un jeton de fournisseur et les tokens techniques restent controles.
+                continue
+            if _READABLE_IDENTIFIER_RE.fullmatch(probe):
+                # Variante chiffree : un nom de version ou de norme
+                # (`pci_dss_4_0_compliance`) reste lisible parce que ses
+                # segments sont COURTS et SEPARES. Un secret, lui, contient un
+                # bloc continu long : `zzqaiosfodnn7example` est refuse ici,
+                # alors qu'une liste blanche par champ l'aurait laisse passer.
                 continue
             if probe in filenames or probe in filenames_fused:
                 continue  # la valeur EST un nom de fichier (pas: suivi d'un fichier)

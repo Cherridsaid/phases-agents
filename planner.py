@@ -606,6 +606,23 @@ def build_b3_plan(
                     missing_capabilities=missing_required,
                 ))
                 continue
+            # Une capacite interdite presente chez le client bloque le skill.
+            # B1 appliquait deja cette regle ; son absence ici rendait
+            # l'interdiction contournable en declarant simplement la capacite.
+            present_forbidden = tuple(
+                capability
+                for capability in sorted(skill.forbidden_capabilities)
+                if capability in available
+            )
+            if present_forbidden:
+                blocked.append(B3BlockedSkill(
+                    skill_id=skill.skill_id,
+                    reason_codes=(
+                        "FORBIDDEN_CLIENT_CAPABILITY_PRESENT",
+                    ),
+                    missing_capabilities=present_forbidden,
+                ))
+                continue
             missing_optional = tuple(
                 capability
                 for capability in sorted(skill.optional_capabilities)

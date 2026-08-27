@@ -250,11 +250,18 @@ def _parse_project_facts(text: str) -> set[str] | None:
 
 
 def _is_reparse_point(path: str) -> bool:
+    """Un seul `os.lstat`, dont l'erreur remonte jusqu'au fail-closed.
+
+    `os.path.islink` avalait l'erreur et rendait `False` : une permission
+    refusee sur un composant devenait un feu vert hors Windows, alors que la
+    branche Windows bloquait. Le meme appel sert desormais aux deux branches.
+    """
     try:
+        info = os.lstat(path)
         if os.name == "nt":
-            attrs = os.lstat(path).st_file_attributes  # type: ignore[attr-defined]
+            attrs = info.st_file_attributes  # type: ignore[attr-defined]
             return bool(attrs & 0x400)
-        return os.path.islink(path)
+        return stat.S_ISLNK(info.st_mode)
     except (OSError, AttributeError, ValueError):
         return True
 

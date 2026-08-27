@@ -27,12 +27,23 @@ compromis, ou un modèle soumis à une injection de prompt, peut donc faire
 
 Ce qui borne l’exposition :
 
-- seuls des **noms de fichiers** et des marqueurs sont lus, jamais le contenu
-  des fichiers de la cible ;
+- **le contenu de certains fichiers est lu**, jusqu’à 200 000 octets par
+  fichier (`_MAX_MARKER_BYTES`), pour y chercher des marqueurs techniques :
+  dépendances, imports, motifs de framework. Un fichier de faits déclarés
+  (`.phases-profile.json`) est lu jusqu’à 32 768 octets ;
+- **aucun contenu brut n’est renvoyé** : la sortie ne porte que des faits, des
+  types, des langages et des noms de marqueurs. Le texte lu sert à décider,
+  il n’est jamais republié ;
 - l’exploration s’arrête à 5 000 fichiers et 10 000 entrées ;
 - les chemins absolus sont masqués dans les champs publics ;
 - les formes UNC sont refusées ;
 - les reparse points et jonctions suspects sont refusés.
+
+Ce que cela implique concrètement : un fichier de la cible peut être lu sans
+que son contenu ressorte. La donnée qui remonte est une conclusion
+(« ce projet est en Python », « il utilise une base de données »), pas un
+extrait. Traitez néanmoins la lecture comme réelle quand vous choisissez le
+compte sous lequel tourne le serveur.
 
 Ce qui reste vrai malgré tout : **une arborescence de noms est de
 l’information**. Un nom de fichier peut révéler un client, un projet ou une

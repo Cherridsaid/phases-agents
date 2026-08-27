@@ -295,12 +295,16 @@ Callers may only lower these limits, never raise them.
 python -m pytest -q
 ```
 
-Expected result:
+Expected result — 755 collected, 0 failed on every platform:
 
 ```text
-729 passed, 2 skipped
-0 failed
+Windows : 753 passed, 2 skipped
+Linux   : 748 passed, 7 skipped
 ```
+
+The skips are platform capabilities, not failures: Windows skips two
+symlink tests when the local privilege is missing; Linux skips the
+Windows-junction tests, which have no POSIX equivalent.
 
 Normative texts are checked out with LF endings, enforced by `.gitattributes`.
 A couple of Windows symlink tests are skipped: they need a local Windows

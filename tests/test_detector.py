@@ -610,3 +610,27 @@ def test_parent_permission_error_is_fail_closed(
 
     monkeypatch.setattr(detector.os, "lstat", guarded_lstat)
     _assert_reparse_blocked(detector.detect_profile(str(target)))
+
+
+def test_parent_permission_error_is_fail_closed_on_posix_branch(
+        tmp_path, monkeypatch):
+    """Meme garantie sur la branche POSIX, depuis n'importe quelle plateforme.
+
+    Le test ci-dessus ne prouve que la branche de la machine qui l'execute :
+    sous Windows il restait vert alors que la branche POSIX etait fail-open,
+    parce que `os.path.islink` avale l'erreur de `lstat` et rend `False`.
+    Forcer la branche ici rend la regression visible des deux cotes.
+    """
+    target = _write(tmp_path, "normal.py", "print(1)\n")
+    denied_parent = os.path.normcase(os.path.abspath(tmp_path))
+    real_lstat = detector.os.lstat
+
+    def guarded_lstat(path, *args, **kwargs):
+        current = os.path.normcase(os.path.abspath(os.fspath(path)))
+        if current == denied_parent:
+            raise PermissionError("parent denied")
+        return real_lstat(path, *args, **kwargs)
+
+    monkeypatch.setattr(detector.os, "lstat", guarded_lstat)
+    monkeypatch.setattr(detector.os, "name", "posix")
+    _assert_reparse_blocked(detector.detect_profile(str(target)))

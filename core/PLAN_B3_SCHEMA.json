@@ -18,18 +18,34 @@
   "properties": {
     "plan_version": {
       "type": "string",
-      "enum": ["B3"]
+      "enum": [
+        "B3"
+      ]
     },
     "plan_status": {
       "type": "string",
-      "enum": ["READY", "PARTIAL", "BLOCKED"]
+      "enum": [
+        "READY",
+        "PARTIAL",
+        "BLOCKED"
+      ]
     },
     "project_profile": {
       "type": "object",
-      "required": ["blocked", "exists", "facts", "languages", "types"],
+      "required": [
+        "blocked",
+        "exists",
+        "facts",
+        "languages",
+        "types"
+      ],
       "properties": {
-        "blocked": {"type": "boolean"},
-        "exists": {"type": "boolean"},
+        "blocked": {
+          "type": "boolean"
+        },
+        "exists": {
+          "type": "boolean"
+        },
         "facts": {
           "type": "array",
           "items": {
@@ -60,7 +76,12 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["javascript", "python", "rust", "typescript"]
+            "enum": [
+              "javascript",
+              "python",
+              "rust",
+              "typescript"
+            ]
           }
         },
         "types": {
@@ -110,8 +131,13 @@
           "limitations"
         ],
         "properties": {
-          "skill_id": {"type": "string", "minLength": 1},
-          "position": {"type": "integer"},
+          "skill_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "position": {
+            "type": "integer"
+          },
           "reason_codes": {
             "type": "array",
             "items": {
@@ -182,9 +208,15 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["skill_id", "reason_codes"],
+        "required": [
+          "skill_id",
+          "reason_codes"
+        ],
         "properties": {
-          "skill_id": {"type": "string", "minLength": 1},
+          "skill_id": {
+            "type": "string",
+            "minLength": 1
+          },
           "reason_codes": {
             "type": "array",
             "items": {
@@ -209,12 +241,18 @@
           "missing_capabilities"
         ],
         "properties": {
-          "skill_id": {"type": "string", "minLength": 1},
+          "skill_id": {
+            "type": "string",
+            "minLength": 1
+          },
           "reason_codes": {
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["REQUIRED_CLIENT_CAPABILITY_MISSING"]
+              "enum": [
+                "REQUIRED_CLIENT_CAPABILITY_MISSING",
+                "FORBIDDEN_CLIENT_CAPABILITY_PRESENT"
+              ]
             }
           },
           "missing_capabilities": {
@@ -252,34 +290,31 @@
         "properties": {
           "gap_id": {
             "type": "string",
-            "enum": [
-              "GAP-EXAMPLE"
-            ]
+            "minLength": 1
           },
           "capability": {
             "type": "string",
-            "enum": [
-              "example_domain_audit"
-            ]
+            "minLength": 1
           },
           "severity": {
             "type": "string",
-            "enum": ["warning", "blocking"]
+            "enum": [
+              "warning",
+              "blocking"
+            ]
           },
           "reason_code": {
             "type": "string",
-            "enum": ["NO_INSTALLED_SKILL_FOR_CAPABILITY"]
+            "enum": [
+              "NO_INSTALLED_SKILL_FOR_CAPABILITY"
+            ]
           },
           "required_facts": {
             "type": "array",
+            "minItems": 1,
             "items": {
               "type": "string",
-              "enum": [
-                "collects_personal_data",
-                "has_ecommerce",
-                "has_eu_context",
-                "uses_payments"
-              ]
+              "minLength": 1
             }
           }
         },
@@ -312,11 +347,18 @@
           "gate"
         ],
         "properties": {
-          "position": {"type": "integer"},
-          "skill_id": {"type": "string", "minLength": 1},
+          "position": {
+            "type": "integer"
+          },
+          "skill_id": {
+            "type": "string",
+            "minLength": 1
+          },
           "action": {
             "type": "string",
-            "enum": ["READ_AND_EXECUTE_SKILL"]
+            "enum": [
+              "READ_AND_EXECUTE_SKILL"
+            ]
           },
           "reason_codes": {
             "type": "array",
@@ -346,7 +388,9 @@
               ]
             }
           },
-          "gate": {"type": "integer"}
+          "gate": {
+            "type": "integer"
+          }
         },
         "additionalProperties": false
       }

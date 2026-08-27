@@ -406,12 +406,16 @@ Commande :
 python -m pytest -q
 ```
 
-Résultat attendu :
+Résultat attendu, 755 collectés, 0 échec sur chaque plateforme :
 
 ```text
-729 réussis, 2 ignorés
-0 échec
+Windows : 753 réussis, 2 ignorés
+Linux   : 748 réussis, 7 ignorés
 ```
+
+Les ignorés sont des capacités de plateforme, pas des échecs : Windows
+ignore deux tests symlinks sans le privilège local ; Linux ignore les
+tests de jonctions Windows, sans équivalent POSIX.
 
 Les textes normatifs sont extraits en LF.
 
