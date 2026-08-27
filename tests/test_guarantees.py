@@ -217,7 +217,7 @@ SECRET_LIKE = [
     "zzqaiosfodnn7example",
     "zq_demo_51h8xq2ezvkylo2c0abcdefgh",
     "zqp_abcdefghijklmnopqrstuvwxyz012345",
-    "aws_secret_zzqaiosfodnn7examplekeyxyz",
+    "vault_token_zzqaiosfodnn7examplekeyxyz",
     # Secrets STRUCTURÉS : segments <= 12 chars mêlant lettres et chiffres.
     # Un mot lisible ne mélange pas les deux dans un même segment.
     "zxb_2f8h3k9d_1a2b3c4d5e6f",

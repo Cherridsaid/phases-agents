@@ -3753,7 +3753,7 @@ def _secret_violation(excerpt) -> str | None:
                 # Variante chiffree : un nom de version ou de norme
                 # (`pci_dss_4_0_compliance`) reste lisible parce que ses
                 # segments sont COURTS et SEPARES. Un secret, lui, contient un
-                # bloc continu long : `zzqaiosfodnn7example` est refuse ici,
+                # bloc continu long : un jeton opaque est refuse ici,
                 # alors qu'une liste blanche par champ l'aurait laisse passer.
                 continue
             if probe in filenames or probe in filenames_fused:
