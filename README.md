@@ -295,11 +295,11 @@ Callers may only lower these limits, never raise them.
 python -m pytest -q
 ```
 
-Expected result — 755 collected, 0 failed on every platform:
+Expected result — 778 collected, 0 failed on every platform:
 
 ```text
-Windows : 753 passed, 2 skipped
-Linux   : 748 passed, 7 skipped
+Windows : 776 passed, 2 skipped
+Linux   : 771 passed, 7 skipped
 ```
 
 The skips are platform capabilities, not failures: Windows skips two

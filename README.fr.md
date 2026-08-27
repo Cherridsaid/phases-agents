@@ -406,11 +406,11 @@ Commande :
 python -m pytest -q
 ```
 
-Résultat attendu, 755 collectés, 0 échec sur chaque plateforme :
+Résultat attendu, 778 collectés, 0 échec sur chaque plateforme :
 
 ```text
-Windows : 753 réussis, 2 ignorés
-Linux   : 748 réussis, 7 ignorés
+Windows : 776 réussis, 2 ignorés
+Linux   : 771 réussis, 7 ignorés
 ```
 
 Les ignorés sont des capacités de plateforme, pas des échecs : Windows
