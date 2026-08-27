@@ -351,6 +351,52 @@ def test_b3_plan_rejects_malformed_gap_identifiers(tmp_path, field, value):
     assert codes & {"PLAN_GAP_ID_INVALID", "PLAN_GAP_CAPABILITY_INVALID"}, codes
 
 
+def test_un_module_qui_leve_ne_tue_pas_la_session(monkeypatch, capsys):
+    """Une exception imprévue coûte un appel, jamais la session entière.
+
+    La boucle stdio appelait ``handle_message`` sans filet : une exception
+    d'un module remontait hors de ``main`` et tuait le processus. Le client
+    MCP perdait toute sa session, pas seulement l'appel fautif.
+    """
+    import io
+    import server
+
+    def exploser(_message, _runtime):
+        raise RuntimeError("panne imprevue d'un module")
+
+    monkeypatch.setattr(server, "handle_message", exploser)
+    ecrites: list[dict] = []
+    monkeypatch.setattr(server, "_write_response",
+                        lambda response: ecrites.append(response) is None)
+    monkeypatch.setattr(server, "_startup_runtime", lambda _a: (None, True))
+    requete = json.dumps({"jsonrpc": "2.0", "id": 7,
+                          "method": "tools/list"}) + "\n"
+    faux_stdin = type("S", (), {"buffer": io.BytesIO(
+        (requete * 2).encode("utf-8"))})()
+    monkeypatch.setattr(server, "sys", type("M", (), {
+        "stdin": faux_stdin, "stderr": sys_stderr_double(),
+        "argv": ["server.py"]})())
+
+    code = server.main([])
+
+    assert code == 0, "la boucle doit se terminer normalement sur EOF"
+    assert len(ecrites) == 2, "les DEUX appels doivent recevoir une reponse"
+    for reponse in ecrites:
+        assert reponse["error"]["code"] == -32603
+        assert reponse["id"] == 7
+
+
+def sys_stderr_double():
+    """stderr jetable : la trace doit être écrite, sans polluer la sortie."""
+    import io
+
+    class _Err(io.StringIO):
+        def flush(self):
+            pass
+
+    return _Err()
+
+
 def test_plan_rendu_par_le_serveur_passe_son_propre_validateur(tmp_path):
     """Le plan livré au client doit rester valide APRÈS l'enveloppe serveur.
 

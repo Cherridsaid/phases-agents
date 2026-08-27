@@ -13,6 +13,7 @@ import math
 import os
 import re
 import sys
+import traceback
 import unicodedata
 from copy import deepcopy
 from typing import Any
@@ -1031,7 +1032,20 @@ def main(arguments: list[str] | None = None) -> int:
             if not _write_response(_error(None, -32700, "Parse error")):
                 return 0
             continue
-        response = handle_message(message, runtime)
+        try:
+            response = handle_message(message, runtime)
+        except Exception:  # noqa: BLE001 - dernier filet avant la mort du process
+            # Un module qui leve tuait le processus stdio : le client perdait
+            # la session ENTIERE, pas seulement l'appel fautif. La trace part
+            # sur stderr pour qu'un bug reste visible, jamais silencieux.
+            try:
+                traceback.print_exc(file=sys.stderr)
+                sys.stderr.flush()
+            except (BrokenPipeError, OSError, UnicodeError):
+                pass
+            response = _error(
+                _safe_response_id(message) if isinstance(message, dict) else None,
+                -32603, "Internal error")
         if response is not None and not _write_response(response):
             return 0
 
