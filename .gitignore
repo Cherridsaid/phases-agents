@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.claude/
+dist/
+build/
+skills-roots.json
+skills-roots.local.json

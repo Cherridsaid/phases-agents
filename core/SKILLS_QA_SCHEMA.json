@@ -1,0 +1,188 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "SKILLS_QA_SCHEMA",
+  "version": "0.1.0",
+  "type": "object",
+  "required": [
+    "skills_checked",
+    "valid",
+    "invalid",
+    "promises_without_mechanism",
+    "missing_tests",
+    "missing_files",
+    "contradictions",
+    "blocked",
+    "limitations"
+  ],
+  "properties": {
+    "skills_checked": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "valid": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "invalid": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "summary", "evidence", "status"],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "CONFIRMED",
+              "HUMAN_REVIEW_REQUIRED",
+              "BLOCKED"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "promises_without_mechanism": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "summary", "evidence", "status"],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "CONFIRMED",
+              "HUMAN_REVIEW_REQUIRED",
+              "BLOCKED"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "missing_tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "summary", "evidence", "status"],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "CONFIRMED",
+              "HUMAN_REVIEW_REQUIRED",
+              "BLOCKED"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "missing_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "summary", "evidence", "status"],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "CONFIRMED",
+              "HUMAN_REVIEW_REQUIRED",
+              "BLOCKED"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "summary", "evidence", "status"],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "CONFIRMED",
+              "HUMAN_REVIEW_REQUIRED",
+              "BLOCKED"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "blocked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "summary", "evidence", "status"],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "CONFIRMED",
+              "HUMAN_REVIEW_REQUIRED",
+              "BLOCKED"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "additionalProperties": false
+}

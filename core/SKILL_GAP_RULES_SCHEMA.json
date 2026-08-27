@@ -1,0 +1,67 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "SKILL_GAP_RULES_SCHEMA",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["schema_id", "version", "description", "rules"],
+  "properties": {
+    "schema_id": {
+      "type": "string",
+      "enum": ["SKILL_GAP_RULES"]
+    },
+    "version": {
+      "type": "string",
+      "enum": ["1.0.0"]
+    },
+    "description": {"type": "string", "minLength": 1},
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gap_id",
+          "required_facts",
+          "capability",
+          "severity",
+          "reason_code"
+        ],
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "enum": [
+              "GAP-EXAMPLE"
+            ]
+          },
+          "required_facts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "collects_personal_data",
+                "has_ecommerce",
+                "has_eu_context",
+                "uses_payments"
+              ]
+            }
+          },
+          "capability": {
+            "type": "string",
+            "enum": [
+              "example_domain_audit"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["warning", "blocking"]
+          },
+          "reason_code": {
+            "type": "string",
+            "enum": ["NO_INSTALLED_SKILL_FOR_CAPABILITY"]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

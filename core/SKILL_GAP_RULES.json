@@ -1,0 +1,16 @@
+{
+  "schema_id": "SKILL_GAP_RULES",
+  "version": "1.0.0",
+  "description": "Lacunes B3 déduites uniquement de faits confirmés. Règle d'exemple.",
+  "rules": [
+    {
+      "gap_id": "GAP-EXAMPLE",
+      "required_facts": [
+        "uses_payments"
+      ],
+      "capability": "example_domain_audit",
+      "severity": "warning",
+      "reason_code": "NO_INSTALLED_SKILL_FOR_CAPABILITY"
+    }
+  ]
+}

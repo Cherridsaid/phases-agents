@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "id": "hello-python",
+  "version": "0.1.0",
+  "title": "Hello Python",
+  "description": "Skill d'exemple : inventorie un projet Python en lecture seule.",
+  "domain": "example",
+  "project_types": [
+    "python"
+  ],
+  "platforms": [
+    "generic"
+  ],
+  "activation": {
+    "any": [
+      "has_python"
+    ]
+  },
+  "exclusions": [],
+  "requires_capabilities": [
+    "filesystem_read"
+  ],
+  "optional_capabilities": [
+    "filesystem_search"
+  ],
+  "forbidden_capabilities": [
+    "web",
+    "target_code_execution"
+  ],
+  "execution_mode": "read_only",
+  "human_approval": "not_required_for_audit",
+  "output_schema": "core:FINDING_SCHEMA.json",
+  "rules_path": "rules",
+  "references_path": "references",
+  "scripts_path": "scripts",
+  "tests_path": "tests",
+  "files": [
+    "scripts/checklist.md"
+  ]
+}

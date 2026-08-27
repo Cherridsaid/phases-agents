@@ -1,0 +1,109 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "SKILL_MANIFEST_SCHEMA",
+  "version": "0.2.0",
+  "type": "object",
+  "required": [
+    "schema_version", "id", "version", "title", "description", "domain",
+    "project_types", "platforms", "activation", "exclusions",
+    "requires_capabilities", "optional_capabilities", "forbidden_capabilities",
+    "execution_mode", "human_approval", "output_schema",
+    "rules_path", "references_path", "scripts_path", "tests_path", "files"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0", "1.1"]
+    },
+    "id": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "description": {"type": "string", "minLength": 1},
+    "domain": {"type": "string", "minLength": 1},
+    "project_types": {"type": "array", "items": {"type": "string"}},
+    "platforms": {"type": "array", "items": {"type": "string"}},
+    "activation": {
+      "type": "object",
+      "required": ["any"],
+      "properties": {
+        "any": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      },
+      "additionalProperties": false
+    },
+    "exclusions": {"type": "array", "items": {"type": "string"}},
+    "requires_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "browser",
+          "dependency_installation",
+          "filesystem_read",
+          "filesystem_search",
+          "filesystem_write",
+          "human_question",
+          "shell",
+          "target_code_execution",
+          "web"
+        ]
+      }
+    },
+    "optional_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "browser",
+          "dependency_installation",
+          "filesystem_read",
+          "filesystem_search",
+          "filesystem_write",
+          "human_question",
+          "shell",
+          "target_code_execution",
+          "web"
+        ]
+      }
+    },
+    "forbidden_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "browser",
+          "dependency_installation",
+          "filesystem_read",
+          "filesystem_search",
+          "filesystem_write",
+          "human_question",
+          "shell",
+          "target_code_execution",
+          "web"
+        ]
+      }
+    },
+    "provides_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "example_domain_audit",
+          "project_profile",
+          "example_package_audit"
+        ]
+      }
+    },
+    "execution_mode": {"type": "string", "enum": ["read_only"]},
+    "human_approval": {
+      "type": "string",
+      "enum": ["not_required_for_audit", "required_before_apply"]
+    },
+    "rules_path": {"type": "string", "minLength": 1},
+    "references_path": {"type": "string", "minLength": 1},
+    "scripts_path": {"type": "string", "minLength": 1},
+    "tests_path": {"type": "string", "minLength": 1},
+    "files": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "output_schema": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

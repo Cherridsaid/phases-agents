@@ -1,0 +1,25 @@
+{
+  "schema_id": "PROFILE_FACTS",
+  "version": "0.2.0",
+  "description": "Faits B3 dérivés de marqueurs techniques ou déclarés explicitement dans .phases-profile.json.",
+  "facts": [
+    "has_source_code",
+    "has_web",
+    "has_python",
+    "has_rust",
+    "has_solana",
+    "has_apk",
+    "has_typescript",
+    "has_javascript",
+    "has_authentication",
+    "has_database",
+    "has_api",
+    "has_file_upload",
+    "has_skill_packages",
+    "uses_payments",
+    "uses_ai",
+    "collects_personal_data",
+    "has_ecommerce",
+    "has_eu_context"
+  ]
+}

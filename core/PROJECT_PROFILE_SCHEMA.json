@@ -1,0 +1,346 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "PROJECT_PROFILE_SCHEMA",
+  "version": "0.1.0",
+  "type": "object",
+  "required": [
+    "project_type",
+    "platforms",
+    "languages",
+    "frameworks",
+    "backend",
+    "databases",
+    "authentication",
+    "payments",
+    "personal_data",
+    "ai_usage",
+    "jurisdictions",
+    "confirmed_facts",
+    "unknowns",
+    "human_questions",
+    "limitations"
+  ],
+  "properties": {
+    "project_type": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "frameworks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "backend": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "databases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "authentication": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "payments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "personal_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "ai_usage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "jurisdictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": [
+              "CONFIRMED",
+              "LIKELY",
+              "UNKNOWN",
+              "HUMAN_INPUT_REQUIRED"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "confirmed_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {"type": "string", "enum": ["CONFIRMED"]},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "state", "evidence"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "state": {
+            "type": "string",
+            "enum": ["UNKNOWN", "HUMAN_INPUT_REQUIRED"]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "human_questions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "limitations": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "additionalProperties": false
+}

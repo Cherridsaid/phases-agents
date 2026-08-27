@@ -1,0 +1,40 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "PROJECT_FACTS_SCHEMA",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["schema_version", "facts"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "collects_personal_data",
+          "has_api",
+          "has_apk",
+          "has_authentication",
+          "has_database",
+          "has_ecommerce",
+          "has_eu_context",
+          "has_file_upload",
+          "has_javascript",
+          "has_python",
+          "has_rust",
+          "has_skill_packages",
+          "has_solana",
+          "has_source_code",
+          "has_typescript",
+          "has_web",
+          "uses_ai",
+          "uses_payments"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}

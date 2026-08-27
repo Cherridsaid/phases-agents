@@ -1,0 +1,61 @@
+{
+  "schema_id": "SEVERITY_MODEL",
+  "version": "0.1.0",
+  "levels": [
+    {
+      "id": "P0_CRITICAL",
+      "definition": "Fuite, fraude, perte de donnees, danger juridique grave ou compromission majeure.",
+      "examples": [
+        "secret en clair committe",
+        "acces non authentifie a une donnee privee"
+      ],
+      "requires_evidence": true,
+      "blocks_production": true
+    },
+    {
+      "id": "P1_HIGH",
+      "definition": "Probleme serieux empechant une mise en production professionnelle.",
+      "examples": [
+        "aucun test sur un parcours critique",
+        "webhook non signe"
+      ],
+      "requires_evidence": true,
+      "blocks_production": true
+    },
+    {
+      "id": "P2_MEDIUM",
+      "definition": "Dette technique ou risque important a moyen terme.",
+      "examples": [
+        "logs sans correlation",
+        "absence de rate limit documente"
+      ],
+      "requires_evidence": true,
+      "blocks_production": false
+    },
+    {
+      "id": "P3_LOW",
+      "definition": "Amelioration utile mais non bloquante.",
+      "examples": [
+        "polices auto-hebergees conseillees",
+        "index manquant probable"
+      ],
+      "requires_evidence": true,
+      "blocks_production": false
+    },
+    {
+      "id": "P4_CONTEXTUAL",
+      "definition": "Depend du contexte, de la plateforme ou du modele economique. Interdit de l'utiliser pour esquiver une preuve technique : si la preuve existe, la gravite reelle s'applique.",
+      "examples": [
+        "cout a echelle x100",
+        "choix d'hebergement selon strategie"
+      ],
+      "requires_evidence": false,
+      "blocks_production": false
+    }
+  ],
+  "rules": [
+    "La gravite n'est jamais calculee par le LLM sans regle explicite du skill.",
+    "Un finding CONFIRMED P0/P1 sans preuve est invalide.",
+    "P4_CONTEXTUAL est interdit si une preuve technique directe existe."
+  ]
+}

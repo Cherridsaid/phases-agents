@@ -1,0 +1,126 @@
+{
+  "schema": "B1_MATRIX_V1",
+  "scenarios": [
+    {
+      "contract_id": "B1-001",
+      "description": "Le validator fournit le snapshot exact lu et valide.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-001-01",
+      "test_nodeid": "tests/test_skill_loader.py::TestB1001ContractAndTypes::test_validator_returns_exact_validated_snapshot"
+    },
+    {
+      "contract_id": "B1-002",
+      "description": "Le loader ne scelle qu'un package valide.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-002-01",
+      "test_nodeid": "tests/test_skill_loader.py::TestB1002SkillLoader::test_valid_skill_is_discovered_and_sealed"
+    },
+    {
+      "contract_id": "B1-003",
+      "description": "Le registre bloque toute collision d'identite.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-003-01",
+      "test_nodeid": "tests/test_registry.py::TestB1003Registry::test_case_collision_blocks_in_both_orders"
+    },
+    {
+      "contract_id": "B1-004",
+      "description": "Le planner consomme le profil detector officiel.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-004-01",
+      "test_nodeid": "tests/test_planner.py::TestB1004Planner::test_normal_profile_and_compatible_skill"
+    },
+    {
+      "contract_id": "B1-005",
+      "description": "Le plan contient des etapes mecaniques ordonnees.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-005-01",
+      "test_nodeid": "tests/test_planner.py::TestB1004Planner::test_multiple_compatible_skills_are_id_sorted"
+    },
+    {
+      "contract_id": "B1-006",
+      "description": "Le tool plan utilise vraiment loader, registre et planner.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-006-01",
+      "test_nodeid": "tests/test_server.py::TestB1005McpSkills::test_plan_direct_selects_real_skill"
+    },
+    {
+      "contract_id": "B1-007",
+      "description": "Les erreurs de racine restent structurees.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-007-01",
+      "test_nodeid": "tests/test_server.py::TestB1005McpSkills::test_absent_root_is_fail_closed"
+    },
+    {
+      "contract_id": "B1-008",
+      "description": "Un SKILL.md absent ne produit aucun snapshot.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-008-01",
+      "test_nodeid": "tests/test_skill_loader.py::TestB1002SkillLoader::test_missing_skill_md_is_invalid"
+    },
+    {
+      "contract_id": "B1-009",
+      "description": "Une entree forgeable sans sceau est refusee.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-009-01",
+      "test_nodeid": "tests/test_registry.py::TestB1003Registry::test_forged_skill_is_rejected"
+    },
+    {
+      "contract_id": "B1-010",
+      "description": "Le planner n'execute jamais le script d'un skill.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-010-01",
+      "test_nodeid": "tests/test_planner.py::TestB1004Planner::test_skill_script_is_never_executed"
+    },
+    {
+      "contract_id": "B1-011",
+      "description": "Le tool detect fonctionne sur le transport stdio reel.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-011-01",
+      "test_nodeid": "tests/test_server.py::TestB1005McpSkills::test_each_tool_works_over_real_stdio[phases_agents_detect]"
+    },
+    {
+      "contract_id": "B1-011",
+      "description": "Le tool list_skills fonctionne sur le transport stdio reel.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-011-02",
+      "test_nodeid": "tests/test_server.py::TestB1005McpSkills::test_each_tool_works_over_real_stdio[phases_agents_list_skills]"
+    },
+    {
+      "contract_id": "B1-011",
+      "description": "Le tool get_skill fonctionne sur le transport stdio reel.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-011-03",
+      "test_nodeid": "tests/test_server.py::TestB1005McpSkills::test_each_tool_works_over_real_stdio[phases_agents_get_skill]"
+    },
+    {
+      "contract_id": "B1-011",
+      "description": "Le tool plan fonctionne sur le transport stdio reel.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-011-04",
+      "test_nodeid": "tests/test_server.py::TestB1005McpSkills::test_each_tool_works_over_real_stdio[phases_agents_plan]"
+    },
+    {
+      "contract_id": "B1-012",
+      "description": "Le corpus hostile fixe ne provoque aucune exception publique.",
+      "expected_exit_code": 0,
+      "expected_result": "PASS",
+      "scenario_id": "B1-012-01",
+      "test_nodeid": "tests/test_b1_quality.py::TestB1DeterministicFuzz::test_public_apis_never_raise_on_fixed_corpus"
+    }
+  ],
+  "total_contracts": 12
+}

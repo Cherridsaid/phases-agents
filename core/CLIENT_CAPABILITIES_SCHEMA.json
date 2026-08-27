@@ -1,0 +1,20 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "CLIENT_CAPABILITIES_SCHEMA",
+  "version": "1.0.0",
+  "type": "array",
+  "items": {
+    "type": "string",
+    "enum": [
+      "browser",
+      "dependency_installation",
+      "filesystem_read",
+      "filesystem_search",
+      "filesystem_write",
+      "human_question",
+      "shell",
+      "target_code_execution",
+      "web"
+    ]
+  }
+}

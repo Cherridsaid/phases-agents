@@ -1,0 +1,356 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "PLAN_B3_SCHEMA",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "plan_version",
+    "plan_status",
+    "project_profile",
+    "client_capabilities",
+    "skills_selected",
+    "skills_not_applicable",
+    "skills_blocked",
+    "skills_missing",
+    "warnings",
+    "steps"
+  ],
+  "properties": {
+    "plan_version": {
+      "type": "string",
+      "enum": ["B3"]
+    },
+    "plan_status": {
+      "type": "string",
+      "enum": ["READY", "PARTIAL", "BLOCKED"]
+    },
+    "project_profile": {
+      "type": "object",
+      "required": ["blocked", "exists", "facts", "languages", "types"],
+      "properties": {
+        "blocked": {"type": "boolean"},
+        "exists": {"type": "boolean"},
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "collects_personal_data",
+              "has_api",
+              "has_apk",
+              "has_authentication",
+              "has_database",
+              "has_ecommerce",
+              "has_eu_context",
+              "has_file_upload",
+              "has_javascript",
+              "has_python",
+              "has_rust",
+              "has_skill_packages",
+              "has_solana",
+              "has_source_code",
+              "has_typescript",
+              "has_web",
+              "uses_ai",
+              "uses_payments"
+            ]
+          }
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["javascript", "python", "rust", "typescript"]
+          }
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "apk",
+              "inconnu",
+              "python",
+              "skill_package",
+              "solana",
+              "web"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "client_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "browser",
+          "dependency_installation",
+          "filesystem_read",
+          "filesystem_search",
+          "filesystem_write",
+          "human_question",
+          "shell",
+          "target_code_execution",
+          "web"
+        ]
+      }
+    },
+    "skills_selected": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "skill_id",
+          "position",
+          "reason_codes",
+          "required_capabilities",
+          "optional_capabilities",
+          "limitations"
+        ],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "position": {"type": "integer"},
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL_CLIENT_CAPABILITY_MISSING",
+                "PROJECT_TYPE_MATCH",
+                "REQUIRED_CLIENT_CAPABILITIES_AVAILABLE"
+              ]
+            }
+          },
+          "required_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "browser",
+                "dependency_installation",
+                "filesystem_read",
+                "filesystem_search",
+                "filesystem_write",
+                "human_question",
+                "shell",
+                "target_code_execution",
+                "web"
+              ]
+            }
+          },
+          "optional_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "browser",
+                "dependency_installation",
+                "filesystem_read",
+                "filesystem_search",
+                "filesystem_write",
+                "human_question",
+                "shell",
+                "target_code_execution",
+                "web"
+              ]
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:browser",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:dependency_installation",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:filesystem_read",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:filesystem_search",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:filesystem_write",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:human_question",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:shell",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:target_code_execution",
+                "OPTIONAL_CAPABILITY_UNAVAILABLE:web"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "skills_not_applicable": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "reason_codes"],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACTIVATION_FACT_MISMATCH",
+                "PROJECT_TYPE_MISMATCH"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "skills_blocked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "skill_id",
+          "reason_codes",
+          "missing_capabilities"
+        ],
+        "properties": {
+          "skill_id": {"type": "string", "minLength": 1},
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["REQUIRED_CLIENT_CAPABILITY_MISSING"]
+            }
+          },
+          "missing_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "browser",
+                "dependency_installation",
+                "filesystem_read",
+                "filesystem_search",
+                "filesystem_write",
+                "human_question",
+                "shell",
+                "target_code_execution",
+                "web"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "skills_missing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "gap_id",
+          "capability",
+          "severity",
+          "reason_code",
+          "required_facts"
+        ],
+        "properties": {
+          "gap_id": {
+            "type": "string",
+            "enum": [
+              "GAP-EXAMPLE"
+            ]
+          },
+          "capability": {
+            "type": "string",
+            "enum": [
+              "example_domain_audit"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["warning", "blocking"]
+          },
+          "reason_code": {
+            "type": "string",
+            "enum": ["NO_INSTALLED_SKILL_FOR_CAPABILITY"]
+          },
+          "required_facts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "collects_personal_data",
+                "has_ecommerce",
+                "has_eu_context",
+                "uses_payments"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "CLIENT_CAPABILITIES_UNDECLARED",
+          "NO_COMPATIBLE_SKILL",
+          "NO_EXECUTABLE_SKILL",
+          "NO_INSTALLED_SKILL_FOR_CAPABILITY",
+          "OPTIONAL_CLIENT_CAPABILITY_MISSING"
+        ]
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "position",
+          "skill_id",
+          "action",
+          "reason_codes",
+          "required_capabilities",
+          "gate"
+        ],
+        "properties": {
+          "position": {"type": "integer"},
+          "skill_id": {"type": "string", "minLength": 1},
+          "action": {
+            "type": "string",
+            "enum": ["READ_AND_EXECUTE_SKILL"]
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "OPTIONAL_CLIENT_CAPABILITY_MISSING",
+                "PROJECT_TYPE_MATCH",
+                "REQUIRED_CLIENT_CAPABILITIES_AVAILABLE"
+              ]
+            }
+          },
+          "required_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "browser",
+                "dependency_installation",
+                "filesystem_read",
+                "filesystem_search",
+                "filesystem_write",
+                "human_question",
+                "shell",
+                "target_code_execution",
+                "web"
+              ]
+            }
+          },
+          "gate": {"type": "integer"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

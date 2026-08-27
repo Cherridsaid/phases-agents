@@ -1,0 +1,132 @@
+{
+  "$schema": "PHASES_SCHEMA_V1",
+  "schema_id": "FINDING_SCHEMA",
+  "version": "0.2.0",
+  "type": "object",
+  "required": [
+    "finding_id", "skill_id", "rule_id", "title", "domain", "status",
+    "severity", "confidence", "scope", "evidence", "impact", "remediation",
+    "limitations", "references"
+  ],
+  "properties": {
+    "finding_id": {"type": "string", "minLength": 1},
+    "skill_id": {"type": "string", "minLength": 1},
+    "rule_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "domain": {"type": "string", "minLength": 1},
+    "status": {
+      "type": "string",
+      "enum": [
+        "OBSERVED", "SUSPECTED", "CONFIRMED", "NOT_APPLICABLE", "BLOCKED",
+        "REMEDIATION_PROPOSED", "REMEDIATED", "HUMAN_REVIEW_REQUIRED"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["P0_CRITICAL", "P1_HIGH", "P2_MEDIUM", "P3_LOW", "P4_CONTEXTUAL"]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]
+    },
+    "status_reason": {"type": "string", "minLength": 1},
+    "observation_status": {
+      "type": "string",
+      "enum": ["OBSERVED", "SUSPECTED", "CONFIRMED", "NOT_APPLICABLE", "BLOCKED"]
+    },
+    "legal_basis_status": {
+      "type": "string",
+      "enum": ["VERIFIED_CURRENT", "UNVERIFIED_CURRENT", "STALE", "REPEALED", "NOT_LEGAL",
+               "CONFLICTING_SOURCES"]
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["CONFIRMED", "SUSPECTED", "HUMAN_REVIEW_REQUIRED", "BLOCKED", "NOT_APPLICABLE"]
+    },
+    "scope": {
+      "type": "object",
+      "required": ["environment", "platform", "component"],
+      "properties": {
+        "environment": {"type": "string", "minLength": 1},
+        "platform": {"type": "string", "minLength": 1},
+        "component": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "path", "method"],
+        "properties": {
+          "type": {"type": "string", "enum": ["file", "absence", "config", "log", "observation"]},
+          "path": {"type": "string", "minLength": 1},
+          "line": {"type": "integer"},
+          "excerpt": {"type": "string"},
+          "method": {"type": "string", "minLength": 1},
+          "searched_in": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "result": {"type": "string"},
+          "limits": {"type": "string"},
+          "validation_level": {
+            "type": "string",
+            "enum": ["STRUCTURALLY_VALIDATED", "TARGET_VERIFIED"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "impact": {
+      "type": "object",
+      "required": ["confidentiality", "integrity", "availability", "legal"],
+      "properties": {
+        "confidentiality": {"type": "string", "enum": ["HIGH", "MEDIUM", "LOW", "NONE", "UNKNOWN"]},
+        "integrity": {"type": "string", "enum": ["HIGH", "MEDIUM", "LOW", "NONE", "UNKNOWN"]},
+        "availability": {"type": "string", "enum": ["HIGH", "MEDIUM", "LOW", "NONE", "UNKNOWN"]},
+        "legal": {"type": "string", "enum": ["HIGH", "MEDIUM", "LOW", "NONE", "UNKNOWN"]}
+      },
+      "additionalProperties": false
+    },
+    "remediation": {
+      "type": "object",
+      "required": ["mode", "summary"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["PROPOSE_ONLY", "NONE"]},
+        "required_gate": {"type": "string", "enum": ["HUMAN_APPROVAL", "LEGAL_REVIEW", "NONE"]},
+        "summary": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "limitations": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "references": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "legal_basis": {
+      "type": "object",
+      "required": ["rule_id", "jurisdiction", "authority", "source_url", "verified_on",
+                   "freshness_window_days", "live_check"],
+      "properties": {
+        "rule_id": {"type": "string", "minLength": 1},
+        "jurisdiction": {"type": "string", "minLength": 1},
+        "authority": {"type": "string", "minLength": 1},
+        "source_url": {"type": "string", "minLength": 1},
+        "verified_on": {"type": "string", "minLength": 1},
+        "freshness_window_days": {"type": "integer"},
+        "live_check": {
+          "type": "object",
+          "required": ["done"],
+          "properties": {
+            "done": {"type": "boolean"},
+            "method": {"type": "string", "minLength": 1},
+            "checked_at": {"type": "string", "minLength": 1},
+            "result": {"type": "string", "enum": ["en_vigueur", "modifie", "abroge", "introuvable"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

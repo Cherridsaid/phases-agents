@@ -1,0 +1,15 @@
+{
+  "schema_id": "RULES_REGISTRY",
+  "version": "0.1.0",
+  "description": "Registre des rule_id connus, alimente par les skills installes. Chaque entree est un objet {rule_id, status}. Un finding qui cite un rule_id absent est rejete (UNKNOWN_RULE) ; une regle 'abroge' est interdite comme droit actuel (RULE_REPEALED). Les entrees ci-dessous sont des exemples : remplacez-les par celles de vos skills.",
+  "rules": [
+    {
+      "rule_id": "EXAMPLE-001",
+      "status": "en_vigueur"
+    },
+    {
+      "rule_id": "EXAMPLE-002",
+      "status": "en_vigueur"
+    }
+  ]
+}
