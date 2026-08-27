@@ -372,7 +372,9 @@ def _collect_files(root: str) -> tuple[list[str], list[str]]:
     return files, issues
 
 
-def _read_text_head_secure(path: str, root: str) -> tuple[str, str | None]:
+def _read_text_head_secure(
+        path: str, root: str,
+        limit: int = _MAX_MARKER_BYTES) -> tuple[str, str | None]:
     before, error = _safe_file_info(path, root)
     if before is None:
         return "", error
@@ -384,7 +386,7 @@ def _read_text_head_secure(path: str, root: str) -> tuple[str, str | None]:
                     or opened.st_nlink != 1
                     or not stat.S_ISREG(opened.st_mode)):
                 return "", "FILE_CHANGED"
-            raw = fh.read(_MAX_MARKER_BYTES)
+            raw = fh.read(limit)
     except (OSError, ValueError):
         return "", "READ_ERROR"
     if not _real_is_within(path, root):
@@ -606,7 +608,11 @@ def detect_profile(target: str) -> dict:
         if (lower == _PROJECT_FACTS_FILE
                 and os.path.normcase(os.path.dirname(full))
                 == os.path.normcase(root)):
-            text, read_error = _read_text_head_secure(full, root)
+            # Lecture bornee a la limite declaree (+1 octet, juste assez pour
+            # detecter le depassement) : SECURITY.md promet 32 Kio pour ce
+            # fichier, pas 200 Ko charges en memoire avant le controle.
+            text, read_error = _read_text_head_secure(
+                full, root, _MAX_PROJECT_FACTS_BYTES + 1)
             facts = (
                 None
                 if read_error

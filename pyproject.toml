@@ -31,6 +31,39 @@ dependencies = []
 [project.urls]
 Source = "https://github.com/Cherridsaid/phases-agents"
 
+# setuptools >= 77 : premier support stable de `license` en chaine SPDX et de
+# `license-files` (PEP 639). Sans build-system declare, pip retombe sur un
+# setuptools legacy qui ne sait pas construire ces metadonnees.
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+# Distribution plate : des modules top-level, pas de package. `core/` et
+# `registry/` sont des DONNEES (schemas JSON, registre) que le code resout
+# relativement a validator.py : elles doivent donc etre installees a cote des
+# modules. Elles sont declarees comme packages (sans code) avec leurs fichiers
+# de donnees. Le module `registry.py` et le dossier `registry/` coexistent :
+# un module regulier prime toujours sur une portion de namespace a l'import.
+[tool.setuptools]
+py-modules = [
+    "capabilities",
+    "detector",
+    "planner",
+    "profile_facts",
+    "registry",
+    "skill_gaps",
+    "skill_loader",
+    "skill_runtime",
+    "skill_types",
+    "validator",
+    "server",
+]
+packages = ["core", "registry"]
+
+[tool.setuptools.package-data]
+core = ["*.json", "*.md"]
+registry = ["*.json"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

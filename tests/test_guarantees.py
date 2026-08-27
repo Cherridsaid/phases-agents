@@ -25,6 +25,7 @@ import planner
 import registry
 from validator import (
     redact_sensitive_text,
+    validate_b3_plan,
     validate_skill_gap_rules,
     validate_skill_package,
 )
@@ -179,9 +180,13 @@ def test_third_party_capability_name_is_not_a_secret(tmp_path):
 MISTYPED_CAPABILITY_FIELDS = [
     ("forbidden_capabilities", 5),
     ("forbidden_capabilities", {"web": True}),
+    ("forbidden_capabilities", [None]),
+    ("forbidden_capabilities", [{"web": True}]),
     ("requires_capabilities", 7),
+    ("requires_capabilities", [{"a": 1}]),
     ("provides_capabilities", 3),
     ("optional_capabilities", "web"),
+    ("optional_capabilities", [["web"]]),
 ]
 
 
@@ -213,12 +218,26 @@ SECRET_LIKE = [
     "zq_demo_51h8xq2ezvkylo2c0abcdefgh",
     "zqp_abcdefghijklmnopqrstuvwxyz012345",
     "aws_secret_zzqaiosfodnn7examplekeyxyz",
+    # Secrets STRUCTURÉS : segments <= 12 chars mêlant lettres et chiffres.
+    # Un mot lisible ne mélange pas les deux dans un même segment.
+    "zxb_2f8h3k9d_1a2b3c4d5e6f",
+    "zq_demo_a1b2c3d4e5f6",
+    "zqp_16c7e42f_292c6912_e7710c83",
+    "zzqa_2b3c4d5e_6f7g8h9i_0j1k2l3m",
+    # Segment etire : 15 caracteres d'un bloc, ce n'est plus un mot.
+    "zq_demo_abcdefghijkl123",
 ]
 READABLE_IDENTIFIERS = [
     "pci_dss_4_0_compliance",
     "iso_27001_2022_audit",
     "gdpr_article_32_review",
     "acme_stock_audit",
+    # Mots techniques a bloc numerique unique, final ou interne : lisibles.
+    "oauth2_token_security",
+    "web3_contract_audit",
+    "sha256_digest_check",
+    "iso27001_compliance_audit",
+    "log4j_dependency_audit",
 ]
 
 
@@ -277,6 +296,68 @@ def test_malformed_gap_identifiers_are_still_rejected():
     assert "GAP_FACT_UNKNOWN" in {
         i.code for i in validate_skill_gap_rules(
             _rules(required_facts=["fait_invente"]))}
+
+
+def _plan_with_gap(tmp_path):
+    """Plan B3 réel dont skills_missing est non vide, par le chemin utilisateur.
+
+    Le chemin est celui d'un client : detector -> planner -> to_public().
+    La lacune vient de la règle d'exemple GAP-EXAMPLE (fait uses_payments,
+    capacité example_domain_audit qu'aucun skill installé ne fournit).
+    """
+    roots = tmp_path / "skills"
+    roots.mkdir()
+    reg = _b3_registry(roots, ())
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "app.py").write_text("value = 1\n", encoding="utf-8")
+    (project / ".phases-profile.json").write_text(
+        json.dumps({"schema_version": "1.0",
+                    "facts": ["has_python", "uses_payments"]}) + "\n",
+        encoding="utf-8")
+    profile = detector.detect_profile(str(project))
+    result = planner.build_b3_plan(profile, reg, ["filesystem_read", "web"])
+    assert result.plan is not None, [i.code for i in result.issues]
+    plan = result.plan.to_public()
+    assert plan["skills_missing"], "fixture : GAP-EXAMPLE doit produire une lacune"
+    return plan
+
+
+B3_GAP_MUTATIONS = [
+    ("gap_id", "gap-example"),          # minuscules : forme invalide
+    ("gap_id", "GAP EXAMPLE!"),         # caractères hors grammaire
+    ("gap_id", "G" + "A" * 70),         # longueur excessive
+    ("capability", "Example-Domain!"),  # forme invalide
+    ("capability", "a" * 70),           # longueur excessive
+]
+
+
+@pytest.mark.parametrize("field,value", B3_GAP_MUTATIONS)
+def test_b3_plan_rejects_malformed_gap_identifiers(tmp_path, field, value):
+    """validate_b3_plan doit imposer la forme des lacunes, comme le registre.
+
+    Le test précédent visait validate_skill_gap_rules (le registre) : le
+    validateur public du plan acceptait ces cinq mutations. Ce test emprunte
+    la surface réelle : planner -> to_public() -> validate_b3_plan.
+    """
+    plan = _plan_with_gap(tmp_path)
+    assert validate_b3_plan(plan) == [], "le plan légitime doit passer"
+    plan["skills_missing"][0][field] = value
+    codes = {issue.code for issue in validate_b3_plan(plan)}
+    assert codes & {"PLAN_GAP_ID_INVALID", "PLAN_GAP_CAPABILITY_INVALID"}, codes
+
+
+def test_b3_plan_survives_unhashable_gap_entries(tmp_path):
+    """Un plan malformé se rejette, il ne fait pas tomber le serveur.
+
+    Une capacité de lacune non-chaîne (liste) rendait le tuple de clé non
+    hachable : set(missing_keys) levait TypeError au lieu de produire une
+    erreur de validation.
+    """
+    plan = _plan_with_gap(tmp_path)
+    plan["skills_missing"][0]["capability"] = ["example_domain_audit"]
+    issues = validate_b3_plan(plan)
+    assert issues, "un plan malformé doit produire au moins une erreur"
 
 
 def test_invisible_character_in_owner_is_rejected(tmp_path):

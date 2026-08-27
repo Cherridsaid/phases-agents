@@ -319,11 +319,17 @@ _FRONTMATTER_KEY_RE = re.compile(r"^[a-z][a-z0-9_-]*$")
 _CAPABILITY_NAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 # Identifiant de lacune : majuscules, chiffres et tirets, borne comme le reste.
 _GAP_ID_RE = re.compile(r"^[A-Z][A-Z0-9-]{0,63}$")
-# Identifiant LISIBLE : segments courts separes, au moins trois. Ce qui compte
-# n'est pas l'absence de chiffre mais l'absence de bloc continu long : un
-# secret ne se decoupe pas en mots de 1 a 8 caracteres.
+# Identifiant LISIBLE : au moins trois segments separes, chacun de DOUZE
+# caracteres au plus (lookahead), soit un mot commencant par une lettre et
+# portant AU PLUS UN bloc numerique, final ou interne (`oauth2`, `sha256`,
+# `iso27001`, `log4j`), soit un nombre pur (version, norme). Un secret
+# structure ALTERNE plusieurs blocs dans un segment (`2f8h3k9d`,
+# `a1b2c3d4e5f6`), le commence par un chiffre, ou etire un segment au-dela
+# de douze caracteres (`abcdefghijkl123`).
 _READABLE_IDENTIFIER_RE = re.compile(
-    r"[a-z][a-z0-9]{0,11}(?:[_-][a-z0-9]{1,12}){2,}")
+    r"(?=[a-z0-9]{1,12}(?![a-z0-9]))[a-z]+(?:[0-9]+[a-z]*)?"
+    r"(?:[_-](?:(?=[a-z0-9]{1,12}(?![a-z0-9]))[a-z]+(?:[0-9]+[a-z]*)?"
+    r"|[0-9]{1,5})){2,}")
 
 _SCHEMA_KEYS = {
     "$schema", "schema_id", "version", "type", "required", "properties",
@@ -2016,9 +2022,18 @@ def _validate_skill_package(skill_dir: str, core_dir: str | None = None,
                 required_capabilities,
                 optional_capabilities,
                 forbidden_capabilities)):
-            required_set = set(required_capabilities)
-            optional_set = set(optional_capabilities)
-            forbidden_set = set(forbidden_capabilities)
+            # Un item non-chaine est deja signale par le schema : on ne garde
+            # que les chaines, car un item non hachable planterait set() et
+            # tuerait la session stdio entiere.
+            required_set = {
+                value for value in required_capabilities
+                if isinstance(value, str)}
+            optional_set = {
+                value for value in optional_capabilities
+                if isinstance(value, str)}
+            forbidden_set = {
+                value for value in forbidden_capabilities
+                if isinstance(value, str)}
             if (
                     required_set & optional_set
                     or required_set & forbidden_set
@@ -2879,25 +2894,47 @@ def validate_b3_plan(plan: object,
             for item in missing
             if isinstance(item, dict)
         ]
-        if (
-                all(all(isinstance(part, str) for part in key)
-                    for key in missing_keys)
+        string_keys = [
+            key for key in missing_keys
+            if all(isinstance(part, str) for part in key)
+        ]
+        if (len(string_keys) == len(missing_keys)
                 and missing_keys != sorted(missing_keys)):
             issues.append(Issue(
                 "error", "PLAN_ORDER",
                 "skills_missing non canonique",
                 "plan.skills_missing"))
-        if len(missing_keys) != len(set(missing_keys)):
+        # Une cle non-chaine est deja signalee par le schema : un tuple non
+        # hachable planterait set() et tuerait la session stdio entiere.
+        if len(string_keys) != len(set(string_keys)):
             issues.append(Issue(
                 "error", "PLAN_DUPLICATE",
                 "lacune dupliquee",
                 "plan.skills_missing"))
         for index, item in enumerate(missing):
-            if isinstance(item, dict):
-                canonical_list(
-                    item.get("required_facts"),
-                    f"plan.skills_missing[{index}].required_facts",
-                )
+            if not isinstance(item, dict):
+                continue
+            # Meme grammaire que le registre (GAP_RULE_ID_INVALID /
+            # GAP_CAPABILITY_UNKNOWN) : le plan public ne doit pas accepter
+            # une lacune que le registre refuse.
+            gap_id = item.get("gap_id")
+            if (isinstance(gap_id, str)
+                    and _GAP_ID_RE.fullmatch(gap_id) is None):
+                issues.append(Issue(
+                    "error", "PLAN_GAP_ID_INVALID",
+                    f"gap_id invalide: {gap_id!r}",
+                    f"plan.skills_missing[{index}].gap_id"))
+            capability = item.get("capability")
+            if (isinstance(capability, str)
+                    and _CAPABILITY_NAME_RE.fullmatch(capability) is None):
+                issues.append(Issue(
+                    "error", "PLAN_GAP_CAPABILITY_INVALID",
+                    "capacite de lacune invalide",
+                    f"plan.skills_missing[{index}].capability"))
+            canonical_list(
+                item.get("required_facts"),
+                f"plan.skills_missing[{index}].required_facts",
+            )
 
     warnings = plan.get("warnings")
     canonical_list(warnings, "plan.warnings")
