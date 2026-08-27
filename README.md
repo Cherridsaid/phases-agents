@@ -91,7 +91,13 @@ Le serveur lit du JSON-RPC ligne par ligne sur son entrée standard. Un
  "client_capabilities":["filesystem_read","filesystem_search"]}}}
 ```
 
-Deux formats de plan coexistent. Sans `plan_version`, le plan historique
+Deux formats de plan coexistent. `"B3"` est le nom du format versionné, pas
+un numéro de version du serveur : son schéma officiel est
+`core/PLAN_B3_SCHEMA.json`. C’est le format à utiliser pour tout nouveau
+travail ; le format historique reste servi pour ne pas casser les appelants
+existants, et sera déprécié avant d’être retiré.
+
+Sans `plan_version`, le plan historique
 rend une liste d’étapes. Avec `"plan_version": "B3"`, le plan versionné rend
 `skills_selected`, `skills_not_applicable`, `skills_blocked` et
 `skills_missing`. `client_capabilities` n’est accepté qu’en B3 : déclarer ce
@@ -185,9 +191,12 @@ Il décrit exactement chaque `phases.json`.
 
 Le manifeste `1.1` sépare deux notions.
 
-`requires_capabilities` décrit le client requis.
+`requires_capabilities` décrit le client requis. Il fait partie des vingt et
+un champs obligatoires listés plus haut.
 
-`provides_capabilities` décrit l’audit fourni.
+`provides_capabilities` décrit l’audit fourni. Il n’est **pas** obligatoire en
+manifeste `1.0` : c’est le manifeste `1.1` qui l’exige. Un manifeste `1.0`
+reste accepté sans ce champ.
 
 ## Identité
 
@@ -300,7 +309,8 @@ est d'analyser un projet quelconque. Il doit être absolu et local ; les
 formes UNC sont refusées. Le serveur y lit des noms de fichiers et des
 marqueurs, jamais leur contenu complet.
 
-N'exposez donc ce serveur qu'à un client de confiance.
+N'exposez donc ce serveur qu'à un client de confiance. Le modèle de menace
+complet, `target` compris, est détaillé dans [SECURITY.md](SECURITY.md).
 
 ### Brancher un client MCP
 
@@ -382,7 +392,7 @@ python -m pytest -q
 Résultat attendu :
 
 ```text
-724 collectés
+726 réussis, 2 ignorés
 0 échec
 ```
 
