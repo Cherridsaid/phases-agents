@@ -83,6 +83,7 @@ _TECHNICAL_OUTPUT_FIELDS = {
     "gap_id",
     "gate",
     "issues",
+    "limitations",
     "missing_capabilities",
     "optional_capabilities",
     "plan_status",

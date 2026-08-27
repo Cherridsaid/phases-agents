@@ -226,6 +226,10 @@ SECRET_LIKE = [
     "zzqa_2b3c4d5e_6f7g8h9i_0j1k2l3m",
     # Segment etire : 15 caracteres d'un bloc, ce n'est plus un mot.
     "zq_demo_abcdefghijkl123",
+    # PREMIER segment etire : la borne de 12 caracteres vaut aussi en tete.
+    # Sans ce cas, relacher la borne du premier segment laissait la suite
+    # verte (mutant survivant de la campagne du 2026-08-28).
+    "abcdefghijklmnop_ab_cd",
 ]
 READABLE_IDENTIFIERS = [
     "pci_dss_4_0_compliance",
@@ -345,6 +349,53 @@ def test_b3_plan_rejects_malformed_gap_identifiers(tmp_path, field, value):
     plan["skills_missing"][0][field] = value
     codes = {issue.code for issue in validate_b3_plan(plan)}
     assert codes & {"PLAN_GAP_ID_INVALID", "PLAN_GAP_CAPABILITY_INVALID"}, codes
+
+
+def test_plan_rendu_par_le_serveur_passe_son_propre_validateur(tmp_path):
+    """Le plan livré au client doit rester valide APRÈS l'enveloppe serveur.
+
+    Le scan de secrets prenait les codes du plan pour des secrets : le client
+    recevait ``<contenu-sensible-masque>`` à la place de
+    ``OPTIONAL_CAPABILITY_UNAVAILABLE:filesystem_search`` et le plan échouait
+    son propre validateur (ENUM). Invisible aux tests qui appellent
+    ``to_public()`` sans traverser ``server._tool_envelope``.
+    """
+    import server
+    import skill_runtime
+
+    roots = tmp_path / "skills"
+    roots.mkdir()
+    shutil.copytree(EXAMPLE, roots / "hello-python")
+    config = tmp_path / "skills-roots.json"
+    config.write_text(
+        json.dumps({"config_version": "1.0",
+                    "roots": [{"id": "t", "path": str(roots)}]}),
+        encoding="utf-8")
+    runtime = skill_runtime.load_skill_runtime_config(str(config)).runtime
+    assert runtime is not None
+
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "app.py").write_text("value = 1\n", encoding="utf-8")
+
+    message = {
+        "jsonrpc": "2.0", "id": 1, "method": "tools/call",
+        "params": {"name": "phases_agents_plan", "arguments": {
+            "root_ids": ["t"], "target": str(project),
+            "today": TODAY.isoformat(),
+            # Capacité optionnelle NON déclarée -> le skill produit une
+            # limitation, qui est le champ qui était masqué.
+            "client_capabilities": ["filesystem_read"],
+            "plan_version": "B3"}}}
+    response = server.handle_message(message, runtime)
+    assert response["result"]["isError"] is False, response
+    plan = json.loads(response["result"]["content"][0]["text"])["plan"]
+
+    limitations = plan["skills_selected"][0]["limitations"]
+    assert limitations == ["OPTIONAL_CAPABILITY_UNAVAILABLE:filesystem_search"], \
+        limitations
+    issues = validate_b3_plan(plan)
+    assert issues == [], [f"{i.code} {i.path}" for i in issues]
 
 
 def test_b3_plan_survives_unhashable_gap_entries(tmp_path):

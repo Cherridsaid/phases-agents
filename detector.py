@@ -399,12 +399,6 @@ def _read_text_head_secure(
     return raw.decode("utf-8", errors="replace"), None
 
 
-def _read_text_head(path: str) -> str:
-    """Compatibilite interne, confinee au dossier parent."""
-    text, _ = _read_text_head_secure(path, os.path.dirname(path) or ".")
-    return text
-
-
 def _cargo_has_solana_dep(text: str) -> bool:
     """Vrai si Cargo.toml déclare une VRAIE dépendance Solana/Anchor.
 

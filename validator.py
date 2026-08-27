@@ -3573,13 +3573,7 @@ _UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 # Label de hash : doit accompagner un hash de longueur exacte.
 _HASH_LABEL_RE = re.compile(r"sha|md5|hash|commit|checksum|digest|fingerprint|empreinte",
                             re.IGNORECASE)
-_SSH_PUB_RE = re.compile(r"^(ssh-rsa|ssh-ed25519|ecdsa-sha2-\S+)$")
 _HASH_EXACT_RE = re.compile(r"^[a-f0-9]{32}$|^[a-f0-9]{40}$|^[a-f0-9]{64}$", re.IGNORECASE)
-# Nom de fichier : le TOKEN ENTIER doit etre un nom de fichier, pas un secret
-# suivi d'un nom de fichier quelque part dans l'extrait.
-_FILENAME_FULL_RE = re.compile(
-    r"^[A-Za-z0-9_-]+\.(py|js|ts|md|json|toml|yaml|yml|txt|sql|html|css|cfg|ini|env|sh|lock|xml|csv|pdf|log)$",
-    re.IGNORECASE)
 
 
 # Reference symbolique officielle d'un schema core (syntaxe de output_schema).
@@ -3614,6 +3608,25 @@ _SAFE_TECHNICAL_TOKENS = (
         "has_authentication",
         "has_file_upload",
         "has_skill_packages",
+    }
+    # Vocabulaire FERME du plan B3 (enums de PLAN_B3_SCHEMA.json). Sans ces
+    # tokens, un code de raison legitime depasse le seuil de secret et le plan
+    # rendu au client contient `<contenu-sensible-masque>` a la place de la
+    # valeur : le plan echoue alors son propre validateur (ENUM).
+    | {
+        "ACTIVATION_FACT_MISMATCH",
+        "CLIENT_CAPABILITIES_UNDECLARED",
+        "FORBIDDEN_CLIENT_CAPABILITY_PRESENT",
+        "NO_COMPATIBLE_SKILL",
+        "NO_EXECUTABLE_SKILL",
+        "NO_INSTALLED_SKILL_FOR_CAPABILITY",
+        "OPTIONAL_CAPABILITY_UNAVAILABLE",
+        "OPTIONAL_CLIENT_CAPABILITY_MISSING",
+        "PROJECT_TYPE_MATCH",
+        "PROJECT_TYPE_MISMATCH",
+        "READ_AND_EXECUTE_SKILL",
+        "REQUIRED_CLIENT_CAPABILITIES_AVAILABLE",
+        "REQUIRED_CLIENT_CAPABILITY_MISSING",
     }
 )
 
