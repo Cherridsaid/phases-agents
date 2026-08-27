@@ -17,10 +17,14 @@ CLIENT_CAPABILITIES = (
     "target_code_execution",
     "web",
 )
+# Capacites FOURNIES : vocabulaire OUVERT. Un catalogue nomme ce qu il apporte ;
+# seule la forme est imposee (validator._CAPABILITY_NAME_RE). Les valeurs
+# ci-dessous sont des EXEMPLES connus, pas une liste fermee : elles servent a
+# eviter que ces identifiants soient pris pour des secrets dans un SKILL.md.
 SKILL_PROVIDED_CAPABILITIES = (
     "example_domain_audit",
-    "project_profile",
     "example_package_audit",
+    "project_profile",
 )
 MAX_CLIENT_CAPABILITIES = 32
 MAX_CLIENT_CAPABILITY_CHARS = 64

@@ -1,6 +1,6 @@
 # phases-agents
 
-![phases-agents — select, block, prove](docs/banner.png)
+![phases-agents : select, block, prove](docs/banner.png)
 
 MCP local de découverte et sélection déterministe de skills validés.
 
@@ -50,6 +50,9 @@ Il utilise alors ses propres outils.
 | `detector.py` | profil local de la cible |
 | `planner.py` | sélection et ordre déterministes |
 | `server.py` | transport JSON-RPC/MCP |
+| `capabilities.py` | vocabulaire des capacités client |
+| `profile_facts.py` | vocabulaire versionné des faits de profil |
+| `skill_gaps.py` | règles de lacunes (`skills_missing`) |
 
 Le contrat normatif est ici :
 
@@ -97,8 +100,7 @@ un numéro de version du serveur : son schéma officiel est
 travail ; le format historique reste servi pour ne pas casser les appelants
 existants, et sera déprécié avant d’être retiré.
 
-Sans `plan_version`, le plan historique
-rend une liste d’étapes. Avec `"plan_version": "B3"`, le plan versionné rend
+Sans `plan_version`, le plan historique rend une liste d’étapes. Avec `"plan_version": "B3"`, le plan versionné rend
 `skills_selected`, `skills_not_applicable`, `skills_blocked` et
 `skills_missing`. `client_capabilities` n’est accepté qu’en B3 : déclarer ce
 que le client sait faire n’a de sens que dans ce format.
@@ -161,7 +163,8 @@ Tous obligatoires : `schema_version`, `id`, `version`, `title`,
 `has_rust`, `has_skill_packages`, `has_solana`, `has_source_code`,
 `has_typescript`, `has_web`, `uses_ai`, `uses_payments`.
 
-`requires_capabilities` et `forbidden_capabilities` utilisent : `browser`,
+`requires_capabilities`, `optional_capabilities` et
+`forbidden_capabilities` utilisent : `browser`,
 `dependency_installation`, `filesystem_read`, `filesystem_search`,
 `filesystem_write`, `human_question`, `shell`, `target_code_execution`,
 `web`.
@@ -187,16 +190,28 @@ Un package invalide bloque le registre.
 
 `SKILL_MANIFEST_SCHEMA.json` reste officiel.
 
-Il décrit exactement chaque `phases.json`.
+Il décrit la **forme** de chaque `phases.json` : champs obligatoires, types et
+vocabulaires fermés.
 
-Le manifeste `1.1` sépare deux notions.
+Le moteur de schéma est volontairement minimal. Il applique `enum`,
+`minLength` et `minItems`, et rien d’autre : ni `pattern`, ni `if`/`then`, ni
+`oneOf`. Un schéma qui utiliserait ces mots-clés serait lui-même rejeté.
 
-`requires_capabilities` décrit le client requis. Il fait partie des vingt et
-un champs obligatoires listés plus haut.
+Conséquence à connaître : les règles **conditionnelles** ne vivent pas dans le
+schéma mais dans `validator.py`, qui reste la source de vérité. La règle de
+version en est l’exemple :
 
-`provides_capabilities` décrit l’audit fourni. Il n’est **pas** obligatoire en
-manifeste `1.0` : c’est le manifeste `1.1` qui l’exige. Un manifeste `1.0`
-reste accepté sans ce champ.
+- `requires_capabilities` fait partie des vingt et un champs obligatoires ;
+- `provides_capabilities` est **interdit** en manifeste `1.0` et **exigé** en
+  manifeste `1.1`.
+
+Cette règle est appliquée et testée, mais elle n’est pas exprimable dans le
+schéma. Ne lisez donc pas `required` comme la totalité du contrat.
+
+Enfin, les capacités **fournies** forment un vocabulaire **ouvert** : chaque
+catalogue nomme ce qu’il apporte, et seule la forme est imposée
+(`^[a-z][a-z0-9_]{0,63}$`). Seules les capacités **client** sont fermées : ce
+sont celles du protocole, pas celles de votre domaine.
 
 ## Identité
 
@@ -304,7 +319,7 @@ Le client MCP fournit uniquement des `root_ids`.
 Aucun chemin de racine de skills n'est accepté par un appel MCP.
 
 En revanche, `detect` et `plan` prennent un `target` : c'est le projet à
-profiler. Ce chemin n'est pas confiné aux racines, par conception — le but
+profiler. Ce chemin n'est pas confiné aux racines, par conception : le but
 est d'analyser un projet quelconque. Il doit être absolu et local ; les
 formes UNC sont refusées. Le serveur y lit des noms de fichiers et des
 marqueurs, jamais leur contenu complet.
@@ -392,7 +407,7 @@ python -m pytest -q
 Résultat attendu :
 
 ```text
-726 réussis, 2 ignorés
+729 réussis, 2 ignorés
 0 échec
 ```
 

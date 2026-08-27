@@ -313,6 +313,11 @@ OFFICIAL_LEGAL_HOSTS = {
 SYMBOLIC_SCHEMA_RE = re.compile(r"^core:([A-Z0-9_]+\.json)$")
 _FRONTMATTER_KEY_RE = re.compile(r"^[a-z][a-z0-9_-]*$")
 
+# Forme d'un nom de capacite (fournie par un skill, ou citee par une regle de
+# lacune). Meme grammaire que les capacites client, mais vocabulaire OUVERT :
+# le protocole fixe ce que le client sait faire, pas ce qu'un catalogue apporte.
+_CAPABILITY_NAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
+
 _SCHEMA_KEYS = {
     "$schema", "schema_id", "version", "type", "required", "properties",
     "additionalProperties", "items", "enum", "minLength", "minItems",
@@ -1965,6 +1970,20 @@ def _validate_skill_package(skill_dir: str, core_dir: str | None = None,
                 "provides_capabilities requis en schema_version 1.1",
                 "phases.json",
             ))
+        # Les capacites FOURNIES sont ouvertes : chaque catalogue nomme ce
+        # qu'il apporte. Seule la FORME est imposee, comme pour les capacites
+        # client. Une liste fermee ici bloquerait tout auteur tiers.
+        provided = manifest.get("provides_capabilities")
+        if isinstance(provided, list):
+            for value in provided:
+                if (not isinstance(value, str)
+                        or _CAPABILITY_NAME_RE.fullmatch(value) is None):
+                    issues.append(Issue(
+                        "error",
+                        "MANIFEST_CAPABILITY_FORM",
+                        f"capacite fournie invalide: {value!r}",
+                        "phases.json",
+                    ))
         for field in (
                 "requires_capabilities",
                 "optional_capabilities",
@@ -3019,10 +3038,10 @@ def validate_skill_gap_rules(
                     "error", "GAP_CAPABILITY_DUPLICATE",
                     "capacite de lacune dupliquee", path))
             seen_capabilities.add(capability)
-            if capability not in SKILL_PROVIDED_CAPABILITIES:
+            if _CAPABILITY_NAME_RE.fullmatch(capability) is None:
                 issues.append(Issue(
                     "error", "GAP_CAPABILITY_UNKNOWN",
-                    "capacite de lacune inconnue", path))
+                    "capacite de lacune invalide", path))
         if isinstance(required_facts, list):
             string_facts = [
                 fact for fact in required_facts
