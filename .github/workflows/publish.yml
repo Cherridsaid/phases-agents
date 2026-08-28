@@ -1,0 +1,119 @@
+name: publish
+
+# Release pipeline, triggered by a version tag (v0.5.0, v0.6.0, ...):
+#
+#   1. run the test suite and prove the built wheel works once installed;
+#   2. build the sdist + wheel and publish them to PyPI through
+#      *trusted publishing* (OIDC), so no API token is stored anywhere;
+#   3. wait until PyPI serves the new version, then publish server.json to the
+#      official MCP Registry, authenticated with GitHub Actions OIDC, again
+#      with no token to store.
+#
+# One-time setup on PyPI, done once by the project owner BEFORE the first tag:
+#   https://pypi.org/manage/account/publishing/  ->  "Add a new pending publisher"
+#     PyPI project name : phases-agents
+#     Owner             : Cherridsaid
+#     Repository name   : phases-agents
+#     Workflow name     : publish.yml
+#     Environment name  : pypi
+#
+# The GitHub environment named `pypi` must exist before the first tag as well.
+#
+# The tag must match the version in pyproject.toml (tag v0.5.0 <-> version
+# 0.5.0); the job fails early otherwise. server.json is aligned to that version
+# at run time, so the version has a single source of truth.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # OIDC: PyPI trusted publishing + MCP Registry login
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check that the tag matches pyproject.toml
+        id: version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PYPROJECT_VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')"
+          echo "tag=$TAG_VERSION  pyproject=$PYPROJECT_VERSION"
+          if [ "$TAG_VERSION" != "$PYPROJECT_VERSION" ]; then
+            echo "::error::tag v$TAG_VERSION does not match pyproject.toml version $PYPROJECT_VERSION"
+            exit 1
+          fi
+          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Install pytest (the only development dependency)
+        run: python -m pip install --upgrade pytest
+
+      - name: Test suite
+        run: python -m pytest -q
+
+      - name: Install the PEP 517 build frontend
+        run: python -m pip install --upgrade build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Prove the INSTALLED wheel works, not just that it builds
+        run: python tests/wheel_check.py
+
+      - name: Publish to PyPI (trusted publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Wait for PyPI to serve the new version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          URL="https://pypi.org/pypi/phases-agents/${VERSION}/json"
+          for i in $(seq 1 30); do
+            STATUS="$(curl -s -o /dev/null -w '%{http_code}' "$URL")"
+            echo "attempt $i: $URL -> HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::PyPI still does not serve phases-agents ${VERSION} after 5 minutes"
+          exit 1
+
+      - name: Align server.json with the released version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          jq --arg v "$VERSION" '.version = $v | .packages[].version = $v' server.json > server.tmp
+          mv server.tmp server.json
+          cat server.json
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher --version || true
+
+      - name: Validate server.json against the registry
+        run: ./mcp-publisher validate server.json
+
+      - name: Authenticate to the MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to the MCP Registry
+        run: ./mcp-publisher publish
+
+      - name: Show the registry entry
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          sleep 5
+          curl -s "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Cherridsaid%2Fphases-agents/versions/${VERSION}" | jq .
