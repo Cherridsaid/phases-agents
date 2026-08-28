@@ -1,4 +1,4 @@
-# Contrat des skills — B1, B2 et B3
+# Contrat des skills : B1, B2 et B3
 
 ## 1. Portee
 
