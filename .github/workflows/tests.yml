@@ -1,0 +1,55 @@
+name: tests
+
+# Test suite on every push to main and on every pull request.
+#
+# The suite itself is hermetic: standard library only, no network, no clock.
+# pytest is the single development dependency, installed here.
+#
+# The `packaging` job is separate on purpose: it needs the network (it creates
+# a throwaway venv and installs the wheel into it), so it stays out of the
+# hermetic matrix and runs once on Linux.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install pytest (the only development dependency)
+        run: python -m pip install --upgrade pytest
+
+      - name: Test suite
+        run: python -m pytest -q
+
+  packaging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install the PEP 517 build frontend
+        run: python -m pip install --upgrade build
+
+      - name: Build the wheel
+        run: python -m build --wheel
+
+      - name: Prove the INSTALLED wheel works, not just that it builds
+        run: python tests/wheel_check.py
