@@ -30,7 +30,7 @@ Ce qui borne l’exposition :
 - **le contenu de certains fichiers est lu**, jusqu’à 200 000 octets par
   fichier (`_MAX_MARKER_BYTES`), pour y chercher des marqueurs techniques :
   dépendances, imports, motifs de framework. Un fichier de faits déclarés
-  (`.phases-profile.json`) est lu jusqu’à 32 768 octets — la lecture elle-même
+  (`.phases-profile.json`) est lu jusqu’à 32 768 octets, la lecture elle-même
   est bornée à un octet de plus, juste assez pour détecter le dépassement ;
 - **aucun contenu brut n’est renvoyé** : la sortie ne porte que des faits, des
   types, des langages et des noms de marqueurs. Le texte lu sert à décider,
