@@ -409,13 +409,17 @@ python -m pytest -q
 Résultat attendu, 778 collectés, 0 échec sur chaque plateforme :
 
 ```text
-Windows : 776 réussis, 2 ignorés
-Linux   : 771 réussis, 7 ignorés
+Linux           : 771 réussis, 7 ignorés
+Windows (CI)    : 778 réussis, 0 ignoré
+Windows (local) : 776 réussis, 2 ignorés
 ```
 
-Les ignorés sont des capacités de plateforme, pas des échecs : Windows
-ignore deux tests symlinks sans le privilège local ; Linux ignore les
-tests de jonctions Windows, sans équivalent POSIX.
+Les ignorés sont des capacités de plateforme, pas des échecs. Linux ignore les
+tests de jonctions Windows, sans équivalent POSIX. Windows n ignore les deux
+tests symlinks que si le privilège local de création de liens manque : un runner
+qui le possède n ignore rien. Chaque compte ci-dessus vient d une exécution
+réelle, les deux lignes Windows étant le runner GitHub Actions et une machine
+locale.
 
 Les textes normatifs sont extraits en LF.
 
