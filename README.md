@@ -300,13 +300,16 @@ python -m pytest -q
 Expected result, 778 collected, 0 failed on every platform:
 
 ```text
-Windows : 776 passed, 2 skipped
-Linux   : 771 passed, 7 skipped
+Linux           : 771 passed, 7 skipped
+Windows (CI)    : 778 passed, 0 skipped
+Windows (local) : 776 passed, 2 skipped
 ```
 
-The skips are platform capabilities, not failures: Windows skips two
-symlink tests when the local privilege is missing; Linux skips the
-Windows-junction tests, which have no POSIX equivalent.
+The skips are platform capabilities, not failures. Linux skips the
+Windows-junction tests, which have no POSIX equivalent. Windows skips the two
+symlink tests only when the local privilege to create symlinks is missing, so a
+runner that holds it reports no skip at all. Every count above comes from a real
+run: the two Windows lines are the GitHub Actions runner and a local machine.
 
 Normative texts are checked out with LF endings, enforced by `.gitattributes`.
 A couple of Windows symlink tests are skipped: they need a local Windows
