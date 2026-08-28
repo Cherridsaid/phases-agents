@@ -1,8 +1,10 @@
+<!-- mcp-name: io.github.Cherridsaid/phases-agents -->
+
 # phases-agents
 
 *English · [Français](README.fr.md)*
 
-![phases-agents: select, block, prove](docs/banner.png)
+![phases-agents: select, block, prove](https://raw.githubusercontent.com/Cherridsaid/phases-agents/main/docs/banner.png)
 
 A local MCP server that discovers, validates and selects skills
 deterministically. Python standard library only, no runtime dependencies.
@@ -22,7 +24,7 @@ decision.
 
 ## Principle
 
-![Same inputs, same plan](docs/determinism.png)
+![Same inputs, same plan](https://raw.githubusercontent.com/Cherridsaid/phases-agents/main/docs/determinism.png)
 
 ```text
 configured root identifiers
@@ -221,7 +223,7 @@ The schema engine is deliberately minimal. It applies `enum`, `minLength` and
 schema using those keywords would itself be rejected.
 
 The consequence matters: **conditional rules live in `validator.py`**, which
-remains the source of truth. The version rule is the example —
+remains the source of truth. The version rule is the example:
 `provides_capabilities` is *forbidden* in a `1.0` manifest and *required* in a
 `1.1` one. That rule is enforced and tested, but it is not expressible in the
 schema. Do not read `required` as the whole contract.
@@ -238,7 +240,7 @@ blocks the whole build; no package is elected arbitrarily.
 
 ## Selection
 
-![Every skill is classified and justified](docs/classification.png)
+![Every skill is classified and justified](https://raw.githubusercontent.com/Cherridsaid/phases-agents/main/docs/classification.png)
 
 Every valid skill in the registry lands in exactly one category, with its
 reason. Nothing is discarded silently.
@@ -258,7 +260,7 @@ An empty plan is explicitly valid: it carries `NO_COMPATIBLE_SKILL`.
 The `B3` plan classifies every installed skill across `skills_selected`,
 `skills_not_applicable` and `skills_blocked`; each skill appears exactly once.
 `skills_missing` lists capabilities with no executable provider, derived from
-confirmed facts only. **A gap never proves non-compliance** — it says an audit
+confirmed facts only. **A gap never proves non-compliance**: it says an audit
 deemed necessary is not covered.
 
 ## Limits
@@ -295,7 +297,7 @@ Callers may only lower these limits, never raise them.
 python -m pytest -q
 ```
 
-Expected result — 778 collected, 0 failed on every platform:
+Expected result, 778 collected, 0 failed on every platform:
 
 ```text
 Windows : 776 passed, 2 skipped
