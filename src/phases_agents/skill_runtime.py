@@ -37,14 +37,14 @@ if os.name == "nt":
     _WAIT_FOR_SINGLE_OBJECT.argtypes = [wintypes.HANDLE, wintypes.DWORD]
     _WAIT_FOR_SINGLE_OBJECT.restype = wintypes.DWORD
 
-from registry import SkillRegistry, build_registry
-from skill_loader import (
+from .registry import SkillRegistry, build_registry
+from .skill_loader import (
     _path_has_reparse_component,
     _valid_root_path,
     discover_skills,
 )
-from skill_types import DEFAULT_SKILL_LIMITS, canonical_skill_id
-from validator import _is_reparse_point, redact_sensitive_text
+from .skill_types import DEFAULT_SKILL_LIMITS, canonical_skill_id
+from .validator import _is_reparse_point, redact_sensitive_text
 
 
 ROOT_CONFIG_VERSION = "1.0"

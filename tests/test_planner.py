@@ -8,10 +8,10 @@ import os
 
 import pytest
 
-from detector import detect_profile
-from planner import build_plan
-from registry import build_registry
-from skill_loader import discover_skills
+from phases_agents.detector import detect_profile
+from phases_agents.planner import build_plan
+from phases_agents.registry import build_registry
+from phases_agents.skill_loader import discover_skills
 from tests.b1_helpers import write_skill
 
 

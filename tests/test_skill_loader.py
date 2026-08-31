@@ -10,9 +10,9 @@ import subprocess
 
 import pytest
 
-import skill_loader
-from skill_loader import discover_skills
-from skill_types import (
+from phases_agents import skill_loader
+from phases_agents.skill_loader import discover_skills
+from phases_agents.skill_types import (
     DEFAULT_SKILL_LIMITS,
     SkillLimits,
     SkillState,
@@ -24,7 +24,7 @@ from skill_types import (
     limits_error,
 )
 from tests.b1_helpers import write_skill
-from validator import (
+from phases_agents.validator import (
     Issue,
     SkillPackageValidation,
     _is_trusted_skill_package_validation,

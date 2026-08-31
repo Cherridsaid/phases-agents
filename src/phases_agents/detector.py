@@ -14,8 +14,8 @@ import re
 import stat
 import tomllib
 
-from profile_facts import PROFILE_FACTS
-from validator import (
+from .profile_facts import PROFILE_FACTS
+from .validator import (
     redact_sensitive_text,
     validate_project_facts_declaration,
 )

@@ -187,7 +187,7 @@ def _validated_skill_capability():
     def issue(validation: object, package_ref: object,
               public_name: object
               ) -> tuple[ValidatedSkill | None, tuple[str, ...]]:
-        from validator import _is_trusted_skill_package_validation
+        from .validator import _is_trusted_skill_package_validation
 
         if (not _is_trusted_skill_package_validation(validation)
                 or not validation.valid):

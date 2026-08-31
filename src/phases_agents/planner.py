@@ -8,11 +8,11 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
-from capabilities import normalize_client_capabilities
-from profile_facts import PROFILE_FACTS
-from registry import SkillRegistry, _validated_registry_skills
-from skill_gaps import load_skill_gap_rules
-from validator import Issue, redact_sensitive_text
+from .capabilities import normalize_client_capabilities
+from .profile_facts import PROFILE_FACTS
+from .registry import SkillRegistry, _validated_registry_skills
+from .skill_gaps import load_skill_gap_rules
+from .validator import Issue, redact_sensitive_text
 
 
 PLAN_VERSION = "1.0"

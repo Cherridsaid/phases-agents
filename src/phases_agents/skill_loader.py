@@ -9,7 +9,7 @@ import stat
 import unicodedata
 from typing import Iterable
 
-from skill_types import (
+from .skill_types import (
     DEFAULT_SKILL_LIMITS,
     DiscoveryReport,
     SkillLimits,
@@ -21,7 +21,7 @@ from skill_types import (
     canonical_skill_id,
     limits_error,
 )
-from validator import (
+from .validator import (
     _is_reparse_point,
     redact_sensitive_text,
     validate_skill_package,

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from validator import validate_skill_gap_rules
+from .validator import validate_skill_gap_rules
 
 
 _RULES_PATH = (

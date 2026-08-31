@@ -28,6 +28,17 @@ First public release.
 - Explicit threat model in `SECURITY.md`, including the `target` surface.
 - Example package `examples/skills/hello-python` and bilingual README.
 
+### Packaging
+
+- `src/` layout: every module now lives in the `phases_agents` package instead
+  of flat top-level modules (`server`, `registry`, `validator`), whose generic
+  names collided with other packages in a shared environment.
+- Console entry point `phases-agents = phases_agents.server:main`, so the
+  `uvx phases-agents` command declared in the MCP manifest resolves to a real
+  command.
+- `tests/wheel_check.py` now also proves the installed package works when its
+  data files are hardlinked, the way uv/uvx installs them.
+
 ### Security
 
 - Fail-closed reparse point detection on every platform: a permission error on
@@ -36,6 +47,15 @@ First public release.
   light where the Windows branch blocked.
 - Registry, loader and runtime read only inside declared roots, with hard
   caps on package count, entry count, file sizes and public output size.
+- The hardlink defense on bounded reads now applies only to untrusted skill
+  files under the roots. The package's own bundled data (`core/` schemas and
+  the `registry/`), identified by real-path containment in the official
+  versioned directories, is exempt from the link check alone, since installers
+  such as uv/uvx materialize package files as hardlinks. Every other check
+  stays: reparse point, regular file, dev/ino identity between check and read,
+  size, confinement. Without this the server was inert under its declared
+  `uvx` runtime; the exemption is proven both ways in the test suite and in
+  `tests/wheel_check.py`.
 
 [Unreleased]: https://github.com/Cherridsaid/phases-agents/compare/v0.5.0...HEAD
 [0.5.0]: https://github.com/Cherridsaid/phases-agents/releases/tag/v0.5.0

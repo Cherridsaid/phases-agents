@@ -17,12 +17,26 @@ from types import SimpleNamespace
 
 import pytest
 
-import detector
-import server
-import validator
-
-
+from phases_agents import detector
+from phases_agents import server
+from phases_agents import validator
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+# Les modules vivent dans le paquet depuis le layout src.
+PKG = ROOT / "src" / "phases_agents"
+
+
+def _source_env():
+    """Environnement ou le paquet sous src/ est importable par un sous-processus."""
+    env = os.environ.copy()
+    pythonpath = env.get("PYTHONPATH")
+    source_root = str(ROOT / "src")
+    env["PYTHONPATH"] = (
+        source_root
+        if not pythonpath
+        else source_root + os.pathsep + pythonpath
+    )
+    return env
+
 TODAY = datetime.date(2026, 7, 29)
 TRUSTED_RULES = validator._trusted_rules_for_tests({"R1": "en_vigueur"})
 
@@ -91,11 +105,20 @@ def _bearer_synthetic():
 
 
 def _run_server(payload: bytes):
+    env = os.environ.copy()
+    pythonpath = env.get("PYTHONPATH")
+    source_root = str(ROOT / "src")
+    env["PYTHONPATH"] = (
+        source_root
+        if not pythonpath
+        else source_root + os.pathsep + pythonpath
+    )
     return subprocess.run(
-        [sys.executable, str(ROOT / "server.py")],
+        [sys.executable, "-m", "phases_agents.server"],
         input=payload,
         capture_output=True,
         cwd=ROOT,
+        env=env,
         timeout=10,
     )
 
@@ -256,6 +279,69 @@ class TestSec002BoundedFileLoading:
         assert profile["blocked"] is True
         assert profile["issues"] == ["FILE_CHANGED"]
         assert "apk" not in profile["types"]
+
+
+
+class TestSec002HardlinkExemptionForPackageData:
+    """Correctif uvx : uv installe les fichiers du paquet en LIENS DURS vers
+    son cache (``st_nlink`` >= 2). La defense anti-lien-dur de ``_read_bytes``
+    ne doit s'effacer QUE pour les donnees officielles scellees (``core/`` et
+    ``registry/``), jamais pour un fichier de skill sous une racine. Sans ce
+    correctif, le serveur est inerte sous son runtime declare ; sans cette
+    limite, la defense SEC-001/SEC-002 serait desarmee pour l'entree hostile.
+    """
+
+    def _hardlinked(self, tmp_path):
+        original = tmp_path / "original.json"
+        original.write_text('{"schema_id": "X"}', encoding="utf-8")
+        linked = tmp_path / "linked.json"
+        os.link(original, linked)
+        assert os.stat(linked).st_nlink == 2
+        return linked
+
+    def test_user_skill_hardlink_is_still_rejected(self, tmp_path):
+        # Hors des dossiers officiels : la defense reste entiere. Un lien dur
+        # est refuse, c'est la protection contre l'echange entre stat et open.
+        linked = self._hardlinked(tmp_path)
+        issues = []
+        result = validator._read_bytes(
+            str(linked), issues, "skill", validator._MAX_JSON_BYTES)
+        assert result is None
+        assert "PATH_UNSAFE" in _codes(issues)
+
+    def test_package_data_hardlink_is_accepted(self, tmp_path, monkeypatch):
+        # Dans le dossier core officiel (ici deplace sur tmp_path) : un lien
+        # dur est LU. C'est exactement ce que produit `uvx` a l'installation.
+        monkeypatch.setattr(validator, "_DEFAULT_CORE_DIR", str(tmp_path))
+        linked = self._hardlinked(tmp_path)
+        issues = []
+        result = validator._read_bytes(
+            str(linked), issues, "schema", validator._MAX_JSON_BYTES)
+        assert result == b'{"schema_id": "X"}'
+        assert issues == []
+
+    def test_registry_dir_hardlink_is_accepted(self, tmp_path, monkeypatch):
+        # Meme exemption pour le registre officiel.
+        monkeypatch.setattr(validator, "_DEFAULT_REGISTRY_DIR", str(tmp_path))
+        linked = self._hardlinked(tmp_path)
+        issues = []
+        result = validator._read_bytes(
+            str(linked), issues, "profile-facts.json",
+            validator._MAX_JSON_BYTES)
+        assert result == b'{"schema_id": "X"}'
+        assert issues == []
+
+    def test_exemption_lifts_only_the_link_check(self, tmp_path, monkeypatch):
+        # L'exemption ne touche QUE le test de lien. Un non-fichier regulier
+        # (repertoire) dans le dossier officiel reste refuse.
+        monkeypatch.setattr(validator, "_DEFAULT_CORE_DIR", str(tmp_path))
+        directory = tmp_path / "notafile.json"
+        directory.mkdir()
+        issues = []
+        result = validator._read_bytes(
+            str(directory), issues, "schema", validator._MAX_JSON_BYTES)
+        assert result is None
+        assert "PATH_UNSAFE" in _codes(issues)
 
 
 class TestSec004HostileDataLimits:
@@ -547,7 +633,7 @@ class TestSec005RegexComplexity:
         code = (
             "import json\n"
             "from time import perf_counter\n"
-            "import validator\n"
+            "from phases_agents import validator\n"
             "times = []\n"
             "corpora = (('<a', True), ('<div', False), "
             "(\"<a href='\", True), "
@@ -576,6 +662,7 @@ class TestSec005RegexComplexity:
             capture_output=True,
             text=True,
             cwd=ROOT,
+            env=_source_env(),
             timeout=30,
         )
         assert result.returncode == 0, result.stderr
@@ -715,7 +802,8 @@ class TestSec006SecretRedaction:
         result = subprocess.run(
             [
                 sys.executable,
-                str(ROOT / "validator.py"),
+                "-m",
+                "phases_agents.validator",
                 str(target),
                 "--today",
                 "2026-07-29",
@@ -723,6 +811,7 @@ class TestSec006SecretRedaction:
             capture_output=True,
             text=True,
             cwd=ROOT,
+            env=_source_env(),
         )
         assert result.returncode == 1
         assert "SECRET_UNMASKED" in result.stdout
@@ -808,7 +897,8 @@ class TestSec007TrustedSchemasAndRegistries:
         result = subprocess.run(
             [
                 sys.executable,
-                str(ROOT / "validator.py"),
+                "-m",
+                "phases_agents.validator",
                 str(report),
                 "--today",
                 "2026-07-29",
@@ -818,6 +908,7 @@ class TestSec007TrustedSchemasAndRegistries:
             capture_output=True,
             text=True,
             cwd=ROOT,
+            env=_source_env(),
         )
         assert result.returncode == 1
         assert "RULES_REGISTRY" in result.stdout
@@ -1005,7 +1096,7 @@ class TestSec012RuntimeEnvironment:
                 "validator.py", "server.py", "detector.py",
                 "skill_loader.py", "skill_runtime.py",
                 "registry.py", "planner.py"):
-            tree = ast.parse((ROOT / name).read_text(encoding="utf-8"))
+            tree = ast.parse((PKG / name).read_text(encoding="utf-8"))
             imported = set()
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
@@ -1024,7 +1115,7 @@ class TestSec012RuntimeEnvironment:
         for name in (
                 "validator.py", "server.py", "detector.py",
                 "skill_loader.py", "registry.py", "planner.py"):
-            tree = ast.parse((ROOT / name).read_text(encoding="utf-8"))
+            tree = ast.parse((PKG / name).read_text(encoding="utf-8"))
             imported = {
                 node.names[0].name.split(".", 1)[0]
                 for node in ast.walk(tree)
@@ -1046,7 +1137,7 @@ class TestSec012RuntimeEnvironment:
 
     def test_validator_never_uses_implicit_clock(self):
         tree = ast.parse(
-            (ROOT / "validator.py").read_text(encoding="utf-8"))
+            (PKG / "validator.py").read_text(encoding="utf-8"))
         implicit_calls = []
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call):

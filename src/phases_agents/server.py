@@ -18,23 +18,23 @@ import unicodedata
 from copy import deepcopy
 from typing import Any
 
-from capabilities import (
+from .capabilities import (
     CLIENT_CAPABILITIES,
     MAX_CLIENT_CAPABILITIES,
     MAX_CLIENT_CAPABILITY_CHARS,
     normalize_client_capabilities,
 )
-from detector import detect_profile
-from planner import build_b3_plan, build_plan
-from registry import get_skill, list_skills
-from skill_runtime import (
+from .detector import detect_profile
+from .planner import build_b3_plan, build_plan
+from .registry import get_skill, list_skills
+from .skill_runtime import (
     SkillRuntime,
     canonical_root_id,
     load_skill_runtime_config,
     resolve_skill_registry,
 )
-from skill_types import canonical_skill_id
-from validator import redact_sensitive_text
+from .skill_types import canonical_skill_id
+from .validator import redact_sensitive_text
 
 PROTOCOL_VERSION = "2024-11-05"
 SUPPORTED_PROTOCOL_VERSIONS = (
@@ -49,9 +49,9 @@ USAGE = """\
 phases-agents — serveur MCP local de sélection déterministe de skills.
 
 Usage :
-  python server.py --skills-config <chemin.json>   démarre le serveur stdio
-  python server.py --help                          affiche cette aide
-  python server.py --version                       affiche la version
+  phases-agents --skills-config <chemin.json>   démarre le serveur stdio
+  phases-agents --help                          affiche cette aide
+  phases-agents --version                       affiche la version
 
 Le serveur parle JSON-RPC 2.0 sur stdin/stdout, une requête par ligne.
 Il découvre, valide et sélectionne des skills ; il n'en exécute aucun.

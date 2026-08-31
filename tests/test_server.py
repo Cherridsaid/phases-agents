@@ -3,6 +3,7 @@
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -10,12 +11,14 @@ from contextlib import contextmanager
 
 import pytest
 
-import server
-from skill_runtime import load_skill_runtime_config
+from phases_agents import server
+from phases_agents.skill_runtime import load_skill_runtime_config
 from tests.b1_helpers import write_skill
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+# Les modules vivent dans le paquet depuis le layout src.
+PKG = ROOT / "src" / "phases_agents"
 _ACTIVE_RUNTIME = None
 _ACTIVE_CONFIG = None
 
@@ -32,16 +35,21 @@ def _bearer_synthetic():
     return "Bearer " + "eyJhbGciOiJub25lIn0.synthetic.signature"
 
 
-def _run_server(payload: dict, server_path=None, config_path=None):
-    target = pathlib.Path(server_path) if server_path else ROOT / "server.py"
+def _run_server(payload: dict, package_root=None, config_path=None):
     env = os.environ.copy()
     pythonpath = env.get("PYTHONPATH")
+    # Le paquet vit sous src/ : c'est lui qu'il faut mettre sur le chemin,
+    # la racine du depot ne contient plus aucun module importable.
+    # `package_root` sert aux mutants : un paquet complet recopie ailleurs,
+    # jamais un fichier isole. Les modules s'importent entre eux en relatif,
+    # un server.py lance seul ne s'importe plus.
+    source_root = str(package_root) if package_root else str(ROOT / "src")
     env["PYTHONPATH"] = (
-        str(ROOT)
+        source_root
         if not pythonpath
-        else str(ROOT) + os.pathsep + pythonpath
+        else source_root + os.pathsep + pythonpath
     )
-    command = [sys.executable, str(target)]
+    command = [sys.executable, "-m", "phases_agents.server"]
     selected_config = (
         _ACTIVE_CONFIG if config_path is None else config_path)
     if selected_config is not None:
@@ -1173,7 +1181,7 @@ def test_valid_non_sensitive_id_may_be_echoed():
 
 
 def test_mutation_raw_message_id_is_caught(tmp_path):
-    source = (ROOT / "server.py").read_text(encoding="utf-8")
+    source = (PKG / "server.py").read_text(encoding="utf-8")
     safe = (
         "return _error(request_id, -32600, "
         "\"Invalid Request: jsonrpc must be '2.0'\")"
@@ -1183,12 +1191,16 @@ def test_mutation_raw_message_id_is_caught(tmp_path):
         "\"Invalid Request: jsonrpc must be '2.0'\")"
     )
     assert source.count(safe) == 1
-    mutant = tmp_path / "server_mutant.py"
-    mutant.write_text(source.replace(safe, vulnerable, 1), encoding="utf-8")
+    # Le mutant remplace server.py dans une COPIE complete du paquet : les
+    # imports relatifs exigent un parent, un fichier isole ne demarre pas.
+    mutant_root = tmp_path / "mutant"
+    shutil.copytree(PKG, mutant_root / "phases_agents")
+    (mutant_root / "phases_agents" / "server.py").write_text(
+        source.replace(safe, vulnerable, 1), encoding="utf-8")
 
     secret = _AWS_ID
     payload = {"jsonrpc": "1.0", "id": secret}
-    result = _run_server(payload, mutant)
+    result = _run_server(payload, mutant_root)
     assert result.returncode == 0
     assert result.stderr == b""
     assert json.loads(result.stdout)["id"] == secret

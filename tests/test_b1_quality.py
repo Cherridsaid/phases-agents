@@ -12,12 +12,12 @@ import tempfile
 
 import pytest
 
-import server
-from planner import build_plan
-from registry import build_registry, get_skill, list_skills
-from skill_loader import discover_skills
-from skill_runtime import configure_skill_runtime
-from skill_types import DiscoveryReport
+from phases_agents import server
+from phases_agents.planner import build_plan
+from phases_agents.registry import build_registry, get_skill, list_skills
+from phases_agents.skill_loader import discover_skills
+from phases_agents.skill_runtime import configure_skill_runtime
+from phases_agents.skill_types import DiscoveryReport
 from tests.b1_helpers import write_skill
 
 

@@ -5,9 +5,7 @@ import subprocess
 
 import pytest
 
-import detector
-
-
+from phases_agents import detector
 def _write(base, rel, content=""):
     path = base / rel
     path.parent.mkdir(parents=True, exist_ok=True)

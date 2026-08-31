@@ -20,10 +20,10 @@ import stat
 
 import pytest
 
-import detector
-import planner
-import registry
-from validator import (
+from phases_agents import detector
+from phases_agents import planner
+from phases_agents import registry
+from phases_agents.validator import (
     redact_sensitive_text,
     validate_b3_plan,
     validate_skill_gap_rules,
@@ -108,7 +108,7 @@ def _b3_registry(root, forbidden):
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8")
-    from skill_loader import discover_skills
+    from phases_agents.skill_loader import discover_skills
 
     built = registry.build_registry(discover_skills([root], TODAY))
     assert built.ok, [issue.code for issue in built.issues]
@@ -359,8 +359,7 @@ def test_un_module_qui_leve_ne_tue_pas_la_session(monkeypatch, capsys):
     MCP perdait toute sa session, pas seulement l'appel fautif.
     """
     import io
-    import server
-
+    from phases_agents import server
     def exploser(_message, _runtime):
         raise RuntimeError("panne imprevue d'un module")
 
@@ -406,9 +405,8 @@ def test_plan_rendu_par_le_serveur_passe_son_propre_validateur(tmp_path):
     son propre validateur (ENUM). Invisible aux tests qui appellent
     ``to_public()`` sans traverser ``server._tool_envelope``.
     """
-    import server
-    import skill_runtime
-
+    from phases_agents import server
+    from phases_agents import skill_runtime
     roots = tmp_path / "skills"
     roots.mkdir()
     shutil.copytree(EXAMPLE, roots / "hello-python")

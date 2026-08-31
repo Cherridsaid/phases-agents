@@ -7,15 +7,15 @@ from dataclasses import replace
 
 import pytest
 
-import registry as registry_module
-from registry import (
+from phases_agents import registry as registry_module
+from phases_agents.registry import (
     SkillRegistry,
     build_registry,
     get_skill,
     list_skills,
 )
-from skill_loader import discover_skills
-from skill_types import (
+from phases_agents.skill_loader import discover_skills
+from phases_agents.skill_types import (
     DiscoveryReport,
     SkillLoadRecord,
     SkillState,

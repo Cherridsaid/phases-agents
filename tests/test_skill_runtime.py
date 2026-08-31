@@ -13,10 +13,10 @@ from types import SimpleNamespace
 
 import pytest
 
-import server
-import skill_runtime
-from registry import get_skill, list_skills
-from skill_runtime import (
+from phases_agents import server
+from phases_agents import skill_runtime
+from phases_agents.registry import get_skill, list_skills
+from phases_agents.skill_runtime import (
     configure_skill_runtime,
     load_skill_runtime_config,
     resolve_skill_registry,
@@ -51,16 +51,27 @@ def _payload(response):
 
 
 def _stdio(request, config):
+    env = os.environ.copy()
+    pythonpath = env.get("PYTHONPATH")
+    # Le paquet vit sous src/ : la racine du depot ne contient plus de module.
+    source_root = str(ROOT / "src")
+    env["PYTHONPATH"] = (
+        source_root
+        if not pythonpath
+        else source_root + os.pathsep + pythonpath
+    )
     return subprocess.run(
         [
             sys.executable,
-            str(ROOT / "server.py"),
+            "-m",
+            "phases_agents.server",
             "--skills-config",
             str(config),
         ],
         input=(json.dumps(request) + "\n").encode("utf-8"),
         capture_output=True,
         cwd=ROOT,
+        env=env,
         timeout=10,
     )
 

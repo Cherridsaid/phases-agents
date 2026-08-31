@@ -28,7 +28,7 @@ _REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Le repro s'exécute HORS du dépôt : depuis le dépôt, core/ serait résolu
 # par le répertoire courant et masquerait une wheel incomplète.
 _PROBE = r"""
-import registry, validator, planner, detector, skill_gaps, server
+from phases_agents import registry, validator, planner, detector, skill_gaps, server
 for module in (registry, validator):
     assert "site-packages" in module.__file__, (
         "la sonde doit importer la wheel installee, pas le depot: "
@@ -46,6 +46,46 @@ assert all(i.code != "SCHEMA_MISSING" for i in rules), (
     "SKILL_GAP_RULES_SCHEMA.json absent de la wheel installee")
 print("codes plan vide:", codes)
 print("WHEEL_CHECK_PASS")
+"""
+
+
+_HARDLINK_PROBE = r"""
+import os, sys
+from phases_agents import validator
+
+# uv/uvx materialise les fichiers du paquet en LIENS DURS vers son cache :
+# st_nlink >= 2. On le reproduit ici en posant un second lien dur sur chaque
+# donnee officielle installee, ce qui porte st_nlink de l'original a 2.
+sidecar_dir = sys.argv[1]
+os.makedirs(sidecar_dir, exist_ok=True)
+linked = 0
+for data_dir in (validator._DEFAULT_CORE_DIR, validator._DEFAULT_REGISTRY_DIR):
+    for name in os.listdir(data_dir):
+        src = os.path.join(data_dir, name)
+        if not os.path.isfile(src):
+            continue
+        os.link(src, os.path.join(sidecar_dir, str(linked) + "_" + name))
+        linked += 1
+        assert os.stat(src).st_nlink >= 2, src
+
+assert linked > 0, "aucune donnee officielle a lier"
+
+# Avant le correctif, ces lectures de schemas a lien dur tombaient en
+# PATH_UNSAFE puis SCHEMA_MISSING -> serveur inerte sous uvx.
+issues = validator.validate_b3_plan({})
+codes = sorted({i.code for i in issues})
+assert "PATH_UNSAFE" not in codes, (
+    "donnee du paquet a lien dur rejetee (regression uvx): " + repr(codes))
+assert "SCHEMA_MISSING" not in codes, (
+    "schema a lien dur introuvable (regression uvx): " + repr(codes))
+assert "SCHEMA_INTEGRITY" not in codes, (
+    "schema a lien dur juge non integre (regression uvx): " + repr(codes))
+rules = validator.validate_skill_gap_rules({"schema_id": "SKILL_GAP_RULES"})
+rules_codes = sorted({i.code for i in rules})
+assert "PATH_UNSAFE" not in rules_codes, (
+    "registre a lien dur rejete (regression uvx): " + repr(rules_codes))
+print("codes plan vide (lien dur):", codes)
+print("HARDLINK_PROBE_PASS")
 """
 
 
@@ -77,10 +117,15 @@ def main() -> int:
             key: value for key, value in os.environ.items()
             if key not in ("PYTHONPATH", "PYTHONHOME", "PYTHONSTARTUP")
         }
+        sidecar = os.path.join(workdir, "hardlink-sidecar")
         steps = [
             [python, "-I", "-m", "pip", "install",
              "--no-deps", "--quiet", wheel],
             [python, "-I", "-c", _PROBE],
+            # Reproduit l'install par liens durs (uv/uvx) et prouve que les
+            # donnees du paquet restent lisibles : sans quoi le serveur est
+            # inerte sous son runtime declare. Non couvert par pip, qui copie.
+            [python, "-I", "-c", _HARDLINK_PROBE, sidecar],
         ]
         for step in steps:
             # cwd hors dépôt : voir le commentaire de _PROBE.

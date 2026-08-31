@@ -28,6 +28,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+phases-agents = "phases_agents.server:main"
+
 [project.urls]
 Source = "https://github.com/Cherridsaid/phases-agents"
 
@@ -38,32 +41,23 @@ Source = "https://github.com/Cherridsaid/phases-agents"
 requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
-# Distribution plate : des modules top-level, pas de package. `core/` et
-# `registry/` sont des DONNEES (schemas JSON, registre) que le code resout
-# relativement a validator.py : elles doivent donc etre installees a cote des
-# modules. Elles sont declarees comme packages (sans code) avec leurs fichiers
-# de donnees. Le module `registry.py` et le dossier `registry/` coexistent :
-# un module regulier prime toujours sur une portion de namespace a l'import.
+# Layout src, un seul paquet. La distribution plate precedente installait
+# `server.py`, `registry.py`, `validator.py` et les dossiers `core/` et
+# `registry/` a la racine de site-packages : des noms trop generiques pour
+# cohabiter avec d'autres paquets dans le meme environnement.
+#
+# `core/` et `registry/` restent des DONNEES resolues relativement a
+# validator.py, donc a cote des modules, maintenant a l'interieur du paquet.
+# Le module `registry.py` et le dossier `registry/` coexistent toujours :
+# un module regulier prime sur une portion de namespace a l'import, ce que
+# la sonde de tests/wheel_check.py verifie sur la wheel installee.
 [tool.setuptools]
-py-modules = [
-    "capabilities",
-    "detector",
-    "planner",
-    "profile_facts",
-    "registry",
-    "skill_gaps",
-    "skill_loader",
-    "skill_runtime",
-    "skill_types",
-    "validator",
-    "server",
-]
-packages = ["core", "registry"]
+package-dir = { "" = "src" }
+packages = ["phases_agents"]
 
 [tool.setuptools.package-data]
-core = ["*.json", "*.md"]
-registry = ["*.json"]
+phases_agents = ["core/*.json", "core/*.md", "registry/*.json"]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["src", "."]
 testpaths = ["tests"]

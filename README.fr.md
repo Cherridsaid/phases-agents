@@ -42,6 +42,8 @@ Il utilise alors ses propres outils.
 
 ## Architecture
 
+Les modules vivent dans `src/phases_agents/`.
+
 | Fichier | Rôle |
 |---|---|
 | `validator.py` | contrats officiels et snapshots validés |
@@ -59,7 +61,7 @@ Il utilise alors ses propres outils.
 Le contrat normatif est ici :
 
 ```text
-core/SKILLS_CONTRACT.md
+src/phases_agents/core/SKILLS_CONTRACT.md
 ```
 
 ## Démarrage rapide
@@ -83,8 +85,12 @@ Créez `skills-roots.json` en pointant la racine d’exemple :
 ```
 
 ```bash
-python server.py --skills-config /chemin/absolu/skills-roots.json
+pip install -e .
+phases-agents --skills-config /chemin/absolu/skills-roots.json
 ```
+
+`pip install -e .` installe la commande `phases-agents`. Sans installation,
+le même serveur démarre avec `PYTHONPATH=src python -m phases_agents.server`.
 
 Le serveur lit du JSON-RPC ligne par ligne sur son entrée standard. Un
 `phases_agents_plan` sur un projet Python sélectionne alors `hello-python` :
@@ -98,7 +104,7 @@ Le serveur lit du JSON-RPC ligne par ligne sur son entrée standard. Un
 
 Deux formats de plan coexistent. `"B3"` est le nom du format versionné, pas
 un numéro de version du serveur : son schéma officiel est
-`core/PLAN_B3_SCHEMA.json`. C’est le format à utiliser pour tout nouveau
+`src/phases_agents/core/PLAN_B3_SCHEMA.json`. C’est le format à utiliser pour tout nouveau
 travail ; le format historique reste servi pour ne pas casser les appelants
 existants, et sera déprécié avant d’être retiré.
 
@@ -313,7 +319,7 @@ Copier `skills-roots.template.json`, puis :
 ```
 
 ```text
-python server.py --skills-config <chemin-absolu>/skills-roots.json
+phases-agents --skills-config <chemin-absolu>/skills-roots.json
 ```
 
 Le client MCP fournit uniquement des `root_ids`.
@@ -337,9 +343,8 @@ Claude Code (`.mcp.json` à la racine de votre projet) :
 {
   "mcpServers": {
     "phases-agents": {
-      "command": "python",
+      "command": "phases-agents",
       "args": [
-        "/chemin/absolu/vers/phases-agents/server.py",
         "--skills-config",
         "/chemin/absolu/vers/skills-roots.json"
       ]

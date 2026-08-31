@@ -27,12 +27,12 @@ import unicodedata
 import weakref
 from collections.abc import Mapping
 
-from capabilities import (
+from .capabilities import (
     CLIENT_CAPABILITIES,
     SKILL_PROVIDED_CAPABILITIES,
     normalize_client_capabilities,
 )
-from profile_facts import PROFILE_FACTS, PROFILE_FACTS_VERSION
+from .profile_facts import PROFILE_FACTS, PROFILE_FACTS_VERSION
 
 _DEFAULT_CORE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "core")
 _DEFAULT_REGISTRY_DIR = os.path.join(
@@ -1365,6 +1365,31 @@ def _check_json_depth(node, depth: int = 0) -> None:
         raise ValueError("chaine JSON Unicode invalide")
 
 
+def _is_trusted_package_data(path: str) -> bool:
+    """Vrai si ``path`` est un fichier de DONNEES livre avec le paquet.
+
+    Ce sont les schemas ``core/`` et le registre ``registry/`` scelles dans la
+    distribution, reconnus par confinement REEL (realpath) dans les dossiers
+    officiels versionnes, la meme logique que ``_is_official_*_dir``.
+
+    Motif : un installeur comme uv/uvx materialise les fichiers du paquet en
+    LIENS DURS vers son cache (``st_nlink`` >= 2). La defense anti-lien-dur de
+    ``_read_bytes`` (SEC-001/SEC-002) rejetterait alors les propres donnees du
+    paquet, rendant le serveur inerte sous son runtime declare. Cette defense
+    vise les fichiers de skills NON FIABLES sous les racines, qu'un auteur
+    hostile pourrait echanger entre le controle et la lecture. Un attaquant
+    capable de poser un lien dur hostile dans ``core/`` ou ``registry/`` a
+    deja un acces en ecriture a site-packages, donc au process entier :
+    exempter ces seuls fichiers du test de lien ne lui offre rien de neuf.
+    Tous les autres controles (reparse, fichier regulier, identite dev/ino
+    entre controle et lecture, taille, confinement) restent appliques.
+    """
+    return (
+        _real_is_within(path, _DEFAULT_CORE_DIR)
+        or _real_is_within(path, _DEFAULT_REGISTRY_DIR)
+    )
+
+
 def _read_bytes(path: str, issues: list[Issue], what: str, max_bytes: int,
                 root: str | None = None) -> bytes | None:
     """Lit un fichier regulier borne.
@@ -1377,8 +1402,9 @@ def _read_bytes(path: str, issues: list[Issue], what: str, max_bytes: int,
     except (OSError, ValueError):
         issues.append(Issue("error", "READ", f"{what} illisible", what))
         return None
+    trusted_package_data = _is_trusted_package_data(path)
     if (not stat.S_ISREG(before.st_mode) or _is_reparse_point(path)
-            or before.st_nlink != 1):
+            or (before.st_nlink != 1 and not trusted_package_data)):
         issues.append(Issue(
             "error", "PATH_UNSAFE",
             f"{what} doit etre un fichier regulier sans lien", what))
@@ -1398,7 +1424,7 @@ def _read_bytes(path: str, issues: list[Issue], what: str, max_bytes: int,
             identity_opened = (opened.st_dev, opened.st_ino)
             if (identity_before != identity_opened
                     or not stat.S_ISREG(opened.st_mode)
-                    or opened.st_nlink != 1):
+                    or (opened.st_nlink != 1 and not trusted_package_data)):
                 issues.append(Issue(
                     "error", "FILE_CHANGED",
                     f"{what} remplace entre controle et lecture", what))

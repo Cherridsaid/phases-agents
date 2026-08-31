@@ -23,6 +23,9 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parent.parent
+# Les modules vivent dans le paquet depuis le passage au layout src. Le scan
+# porte sur eux, pas sur la racine du depot qui ne contient plus de code.
+PKG = REPO / "src" / "phases_agents"
 
 def _local_imports(source: str, root: Path) -> set[str]:
     """Noms des modules locaux (fichiers ``<nom>.py`` de ``root``) importés."""
@@ -31,8 +34,14 @@ def _local_imports(source: str, root: Path) -> set[str]:
         names: list[str] = []
         if isinstance(node, ast.Import):
             names = [alias.name.split(".")[0] for alias in node.names]
-        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
-            names = [node.module.split(".")[0]]
+        elif isinstance(node, ast.ImportFrom):
+            # Les imports internes sont relatifs depuis le layout src
+            # (``from .validator import ...``). Les ignorer viderait la
+            # fermeture et rendrait le scan menteur.
+            if node.module:
+                names = [node.module.split(".")[0]]
+            elif node.level:
+                names = [alias.name.split(".")[0] for alias in node.names]
         for name in names:
             if (root / f"{name}.py").is_file():
                 found.add(name)
@@ -60,7 +69,7 @@ def _audit_path_closure(root: Path, entry: str = "server.py") -> tuple[str, ...]
     return tuple(sorted(seen))
 
 
-AUDIT_PATH_MODULES = _audit_path_closure(REPO)
+AUDIT_PATH_MODULES = _audit_path_closure(PKG)
 
 # Garde-fou de vacuité : si la fermeture s'effondrait (refactor cassant le
 # calcul), le scan deviendrait vide et menteur. Ces modules connus doivent
@@ -642,7 +651,7 @@ class TestNoImplicitNetwork:
                      "telnetlib", "requests", "httpx"}
         offenders = {}
         for name in AUDIT_PATH_MODULES:
-            tree = ast.parse((REPO / name).read_text(encoding="utf-8"))
+            tree = ast.parse((PKG / name).read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     found = {a.name.split(".")[0] for a in node.names}
@@ -689,14 +698,14 @@ class TestAuditPathNeverActs:
 
     @pytest.mark.parametrize("name", AUDIT_PATH_MODULES)
     def test_module_has_no_forbidden_construct(self, name: str):
-        source = (REPO / name).read_text(encoding="utf-8")
+        source = (PKG / name).read_text(encoding="utf-8")
         violations = _scan_source(source, name)
         assert violations == []
 
     def test_kernel32_bindings_are_observation_only(self):
         """L'exemption ctypes de skill_runtime reste épinglée à trois
         fonctions d'observation. Toute nouvelle liaison kernel32 échoue ici."""
-        source = (REPO / "skill_runtime.py").read_text(encoding="utf-8")
+        source = (PKG / "skill_runtime.py").read_text(encoding="utf-8")
         assert _dll_handle_violations(source, "skill_runtime.py") == []
 
     def test_dll_check_flags_aliased_handle(self):

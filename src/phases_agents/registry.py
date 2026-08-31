@@ -7,7 +7,7 @@ from bisect import bisect_left
 from dataclasses import dataclass
 from typing import Any, NamedTuple
 
-from skill_types import (
+from .skill_types import (
     DiscoveryReport,
     SkillLoadRecord,
     SkillState,
@@ -16,7 +16,7 @@ from skill_types import (
     _is_validated_skill,
     canonical_skill_id,
 )
-from validator import Issue
+from .validator import Issue
 
 
 _MAX_REGISTRY_SKILLS = 1_000

@@ -7,3 +7,4 @@ dist/
 build/
 skills-roots.json
 skills-roots.local.json
+*.egg-info/

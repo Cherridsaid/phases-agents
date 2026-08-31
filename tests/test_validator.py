@@ -15,7 +15,7 @@ import sys
 
 import pytest
 
-from validator import (
+from phases_agents.validator import (
     Issue,
     SKILL_REQUIRED_SECTIONS,
     _has_invisible_or_mixed,
@@ -30,7 +30,9 @@ from validator import (
     validate_skill,
 )
 
-CORE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "core")
+CORE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "src", "phases_agents", "core")
 TODAY = datetime.date(2026, 7, 27)
 # Registre par defaut : couvre les rule_id des fixtures (R6-004).
 # SEC-001 = _valid_finding, R1 = _legal_basis, REG-1 = fixtures juridiques.
@@ -590,7 +592,8 @@ class TestValidateSkill:
         skill_md = prefix + body
         d = _make_skill(tmp_path, skill_md=skill_md)
         code = (
-            "import datetime,json,sys,validator\n"
+            "import datetime,json,sys\n"
+            "from phases_agents import validator\n"
             "issues=validator.validate_skill("
             "sys.argv[1],sys.argv[2],today=datetime.date(2026,7,27))\n"
             "errors=[(i.code,i.path,i.message) for i in issues "
@@ -598,9 +601,20 @@ class TestValidateSkill:
             "print(json.dumps(errors,ensure_ascii=False))\n"
             "raise SystemExit(bool(errors))\n"
         )
+        env = os.environ.copy()
+        pythonpath = env.get("PYTHONPATH")
+        # Le paquet vit sous src/ : sans lui sur le chemin, la sonde
+        # n'importe rien. Les modules s'importent en relatif desormais.
+        source_root = os.path.dirname(os.path.dirname(CORE_DIR))
+        env["PYTHONPATH"] = (
+            source_root
+            if not pythonpath
+            else source_root + os.pathsep + pythonpath
+        )
         result = subprocess.run(
             [sys.executable, "-c", code, str(d), CORE_DIR],
             cwd=os.path.dirname(CORE_DIR),
+            env=env,
             capture_output=True,
             text=True,
             timeout=15,
@@ -1023,7 +1037,7 @@ class TestAdversarialSkills:
         # N-001 : {"type":[]} ne crash plus.
         bad_schema = {"type": "object", "properties": {"x": {"type": []}}}
         issues = []
-        from validator import _check_schema_shape
+        from phases_agents.validator import _check_schema_shape
         _check_schema_shape(bad_schema, issues, "test")
         assert any(i.code == "SCHEMA_KW_TYPE" for i in issues)
 
@@ -1031,7 +1045,7 @@ class TestAdversarialSkills:
         # N-001 : items: "bad" est rejete, pas ignore.
         bad_schema = {"type": "array", "items": "bad"}
         issues = []
-        from validator import _check_schema_shape
+        from phases_agents.validator import _check_schema_shape
         _check_schema_shape(bad_schema, issues, "test")
         assert any(i.code == "SCHEMA_KW_TYPE" for i in issues)
 
@@ -1103,27 +1117,27 @@ class TestJuryAdversarial:
         assert "SECRET_UNMASKED" in _codes(_vf(f, finding_schema, today=TODAY))
 
     def test_backslash_dotdot_rejected(self, tmp_path):
-        from validator import _safe_relpath
+        from phases_agents.validator import _safe_relpath
         assert _safe_relpath(str(tmp_path), r"rules\..\rules\x.txt") is None
 
     def test_ads_rejected(self, tmp_path):
-        from validator import _safe_relpath
+        from phases_agents.validator import _safe_relpath
         assert _safe_relpath(str(tmp_path), "file.txt:hidden") is None
 
     def test_trailing_dot_rejected(self, tmp_path):
-        from validator import _safe_relpath
+        from phases_agents.validator import _safe_relpath
         assert _safe_relpath(str(tmp_path), "tests.") is None
 
     def test_trailing_space_rejected(self, tmp_path):
-        from validator import _safe_relpath
+        from phases_agents.validator import _safe_relpath
         assert _safe_relpath(str(tmp_path), "tests ") is None
 
     def test_unc_rejected(self, tmp_path):
-        from validator import _safe_relpath
+        from phases_agents.validator import _safe_relpath
         assert _safe_relpath(str(tmp_path), r"\\server\share\x") is None
 
     def test_url_encoded_dotdot_rejected(self, tmp_path):
-        from validator import _safe_relpath
+        from phases_agents.validator import _safe_relpath
         assert _safe_relpath(str(tmp_path), "%2e%2e/outside") is None
 
     def test_legal_domain_trailing_space(self, finding_schema):
@@ -1234,7 +1248,7 @@ class TestJuryAdversarial:
                 {"SEC-001": "en_vigueur"})))
 
     def test_schema_cycle_rejected(self):
-        from validator import _check_schema_shape
+        from phases_agents.validator import _check_schema_shape
         s = {"type": "object", "properties": {}}
         s["properties"]["self"] = s
         issues = []
@@ -1242,13 +1256,13 @@ class TestJuryAdversarial:
         assert any(i.code == "SCHEMA_CYCLE" for i in issues)
 
     def test_schema_required_dict_element_rejected(self):
-        from validator import _check_schema_shape
+        from phases_agents.validator import _check_schema_shape
         issues = []
         _check_schema_shape({"type": "object", "required": [{}]}, issues, "test")
         assert any(i.code == "SCHEMA_KW_TYPE" for i in issues)
 
     def test_json_dup_key_rejected(self, tmp_path):
-        from validator import _load_json
+        from phases_agents.validator import _load_json
         p = tmp_path / "x.json"
         p.write_text('{"id":"a","id":"b"}', encoding="utf-8")
         issues = []
@@ -1256,7 +1270,7 @@ class TestJuryAdversarial:
         assert any(i.code == "DUPLICATE_KEY" for i in issues)
 
     def test_json_deep_rejected(self, tmp_path):
-        from validator import _load_json
+        from phases_agents.validator import _load_json
         p = tmp_path / "deep.json"
         p.write_text("[" * 5000 + "]" * 5000, encoding="utf-8")
         issues = []

@@ -11,7 +11,7 @@ import json
 import pathlib
 import shutil
 
-from validator import redact_sensitive_text, validate_skill_package
+from phases_agents.validator import redact_sensitive_text, validate_skill_package
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXAMPLE = ROOT / "examples" / "skills" / "hello-python"

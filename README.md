@@ -43,6 +43,8 @@ executes a skill.**
 
 ## Architecture
 
+The modules live in `src/phases_agents/`.
+
 | File | Role |
 |---|---|
 | `validator.py` | official contracts and validated snapshots |
@@ -57,7 +59,8 @@ executes a skill.**
 | `profile_facts.py` | versioned profile-fact vocabulary |
 | `skill_gaps.py` | gap rules (`skills_missing`) |
 
-The normative contract lives in `core/SKILLS_CONTRACT.md` (French).
+The normative contract lives in `src/phases_agents/core/SKILLS_CONTRACT.md`
+(French).
 
 ## Quick start
 
@@ -80,8 +83,12 @@ Create `skills-roots.json` pointing at the example root:
 ```
 
 ```bash
-python server.py --skills-config /absolute/path/to/skills-roots.json
+pip install -e .
+phases-agents --skills-config /absolute/path/to/skills-roots.json
 ```
+
+`pip install -e .` installs the `phases-agents` command. Without installing,
+the same server starts with `PYTHONPATH=src python -m phases_agents.server`.
 
 The server reads JSON-RPC line by line on standard input. A
 `phases_agents_plan` call against a Python project then selects
@@ -95,7 +102,8 @@ The server reads JSON-RPC line by line on standard input. A
 ```
 
 Two plan formats coexist. `"B3"` names the versioned **format**, not a server
-version; its official schema is `core/PLAN_B3_SCHEMA.json`. Use it for new
+version; its official schema is
+`src/phases_agents/core/PLAN_B3_SCHEMA.json`. Use it for new
 work. Without `plan_version`, the legacy format returns a flat list of steps;
 it is kept so existing callers do not break, and will be deprecated before
 removal. `client_capabilities` is only accepted in B3, since declaring what
@@ -109,9 +117,8 @@ Claude Code (`.mcp.json` at the root of your project):
 {
   "mcpServers": {
     "phases-agents": {
-      "command": "python",
+      "command": "phases-agents",
       "args": [
-        "/absolute/path/to/phases-agents/server.py",
         "--skills-config",
         "/absolute/path/to/skills-roots.json"
       ]
